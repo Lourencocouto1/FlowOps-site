@@ -1,20 +1,26 @@
 ---
 import SectionHead from '../ui/SectionHead.astro';
 import Icon from '../ui/Icon.astro';
+import BrandF from '../ui/BrandF.astro';
 import { getSection, getOrdered } from '../../lib/site';
 
 const head = await getSection('method');
 const steps = await getOrdered('steps');
 ---
 <section class="section on-dark relative overflow-hidden bg-brand-strong text-white" id="metodo" aria-labelledby="metodo-title">
-  <div class="container-site relative">
+  <BrandF class="wm-f text-white opacity-5" />
+  <div class="container-site relative z-[1]">
     <SectionHead id="metodo-title" label={head.label} title={head.title} lead={head.lead} tone="dark" />
-    <!-- Fase 3: linha de fluxo desenhada com o scroll, F em marca de água. -->
-    <ol class="grid gap-4 lg:grid-cols-[repeat(4,1fr)_96px]">
+    <!-- Linha de fluxo entre os passos. Fase 3: desenha-se com o scroll (--p de 0 a 1). -->
+    <div class="relative [--p:1]" data-flow>
+    <div class="absolute top-[22px] bottom-[22px] left-[21px] w-0.5 bg-white/20 lg:top-[21px] lg:right-[74px] lg:bottom-auto lg:left-[22px] lg:h-0.5 lg:w-auto" aria-hidden="true">
+      <div class="absolute inset-0 origin-top scale-y-(--p) bg-aqua lg:origin-left lg:scale-x-(--p) lg:scale-y-100"></div>
+    </div>
+    <ol class="relative grid gap-5 lg:grid-cols-[repeat(4,1fr)_96px] lg:gap-4">
       {steps.map(({ data }, i) => (
         <li class="grid content-start gap-4 max-lg:grid-cols-[44px_1fr]">
           <span class="grid size-11 place-items-center rounded-full border-2 border-aqua bg-aqua font-display font-bold text-ink" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-          <div class="grid content-start gap-2.5 rounded-[14px] border border-white/15 bg-brand-deep p-6">
+          <div class="lift grid content-start gap-2.5 rounded-[14px] border border-white/15 bg-brand-deep p-6">
             <h3 class="text-[1.15rem] text-white"><span class="sr-only">Passo {i + 1}: </span>{data.title}</h3>
             {data.badge && <span class="justify-self-start rounded-full bg-amber px-2 py-0.5 text-[0.75rem] font-semibold text-ink">{data.badge}</span>}
             <p class="text-on-deep">{data.text}</p>
@@ -26,5 +32,6 @@ const steps = await getOrdered('steps');
         <span class="text-[0.85rem] font-semibold">{head.endLabel}</span>
       </li>
     </ol>
+    </div>
   </div>
 </section>

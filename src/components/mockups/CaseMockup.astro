@@ -1,0 +1,70 @@
+---
+// Mockup grande de cada caso: telemóvel ou portátil. Ao passar o rato, focar ou tocar, o aparelho sobe e aparece a confirmação.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Icon from '../ui/Icon.astro';
+import BrandF from '../ui/BrandF.astro';
+
+interface Props {
+  device: 'phone' | 'laptop';
+  mockup: 'clinic' | 'bakery' | 'garage' | 'gym' | 'image';
+  toast: string;
+  image?: ImageMetadata;
+}
+const { device, mockup, toast, image } = Astro.props;
+---
+<div class="cs-stage" aria-hidden="true">
+  <BrandF class="cs-stage-f" />
+  {device === 'phone' ? (
+    <div class="mk-phone cs-device cs-phone"><div class="mk-screen"><div class="cs-scroll">
+      {mockup === 'clinic' && (
+        <>
+          <div class="mk-top"><b>Clínica Vértice</b><small>Fisioterapia</small></div>
+          <div class="mk-service compact"><div><b>Sessão de fisioterapia</b><small>50 min</small></div></div>
+          <div class="mk-day">Quinta-feira, 12 nov.</div>
+          <div class="mk-slots"><span class="busy">09:00</span><span>10:00</span><span class="busy">11:00</span><span class="cs-pick">14:00</span><span class="busy">15:00</span><span>16:00</span></div>
+          <span class="mk-btn mk-btn-block">Confirmar marcação</span>
+        </>
+      )}
+      {mockup === 'gym' && (
+        <>
+          <div class="mk-top"><b>Ginásio Órbita</b><small>Aulas</small></div>
+          <div class="mk-day">Hoje</div>
+          <div class="mk-class"><b>Pilates · 18:00</b><span>Lugares disponíveis</span><em class="cs-pick-btn">Reservar</em></div>
+          <div class="mk-class"><b>Treino funcional · 19:00</b><em class="done">Reservado ✓</em></div>
+          <div class="mk-class"><b>Mobilidade · 20:00</b><span>Lotação completa</span></div>
+        </>
+      )}
+      {mockup === 'image' && image && <Image src={image} alt="" widths={[200, 400]} sizes="200px" class="h-full w-full object-cover object-top" />}
+    </div></div></div>
+  ) : (
+    <div class="cs-device cs-laptop">
+      <div class="cs-lid"><div class="cs-lscreen"><div class="cs-scroll">
+        {mockup === 'bakery' && (
+          <>
+            <div class="mk-top"><b>Padaria Lumen</b><small>Produtos · Encomendas · Contactos</small></div>
+            <div class="cs-lap-grid">
+              <div class="grid content-start gap-1.5"><b class="cs-lap-title">Encomende hoje, levante amanhã a partir das 7h.</b><span class="mk-btn">Fazer encomenda</span></div>
+              <div class="mk-shapes tall"><i></i><i></i></div>
+            </div>
+            <div class="mk-table"><div class="h"><span>Produto</span><span>Preço</span><span></span></div><div><span>Pão de centeio</span><span>2,40 €</span><span class="mk-btn xs">+</span></div><div><span>Broa de milho</span><span>1,90 €</span><span class="mk-btn xs">+</span></div></div>
+          </>
+        )}
+        {mockup === 'garage' && (
+          <>
+            <div class="mk-top"><b>Oficina Nortecar</b><small>Hoje</small></div>
+            <div class="mk-tiles"><div><b>7</b><span>Em curso</span></div><div><b>3</b><span>Prontas a entregar</span></div></div>
+            <div class="mk-table">
+              <div class="h"><span>Viatura · cliente</span><span>Estado</span><span>Aviso</span></div>
+              <div><span>Utilitário · R. Silva</span><span class="mk-pill ok">Pronto</span><span>Enviado</span></div>
+              <div><span>Ligeiro · M. Lopes</span><span class="mk-pill wip">Em curso</span><span>–</span></div>
+            </div>
+          </>
+        )}
+        {mockup === 'image' && image && <Image src={image} alt="" widths={[420, 840]} sizes="420px" class="h-full w-full object-cover object-top" />}
+      </div></div></div>
+      <div class="cs-base"></div>
+    </div>
+  )}
+  <div class="cs-toast"><span class="mk-ok sm"><Icon name="ok" class="size-3" strokeWidth={3} /></span>{toast}</div>
+</div>

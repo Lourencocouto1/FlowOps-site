@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/manrope/wght.css';
 @import '@fontsource-variable/inter/wght.css';
+@import './mockups.css';
 
 /* Tokens da marca (brand board aprovada). Contrastes WCAG em README.md. */
 @theme {

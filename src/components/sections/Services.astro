@@ -1,6 +1,6 @@
 ---
 import SectionHead from '../ui/SectionHead.astro';
-import Icon from '../ui/Icon.astro';
+import ServicePreview from '../mockups/ServicePreview.astro';
 import { getSection, getOrdered } from '../../lib/site';
 
 const head = await getSection('services');
@@ -11,11 +11,8 @@ const items = await getOrdered('services');
     <SectionHead id="servicos-title" label={head.label} title={head.title} lead={head.lead} />
     <ul class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {items.map(({ data }) => (
-        <li class="grid content-start gap-2.5 rounded-[14px] border border-line bg-white p-6">
-          <!-- Fase 2: mini pré-visualização da interface ({data.preview}). -->
-          <div class="-mx-1 -mt-1 mb-2 grid h-[172px] place-items-center rounded-[10px] bg-soft text-brand" aria-hidden="true">
-            <Icon name={data.preview === 'website' ? 'website' : data.preview} class="size-10" strokeWidth={1.5} />
-          </div>
+        <li class="sv-card lift grid content-start gap-2.5 overflow-hidden rounded-[14px] border border-line bg-white p-6">
+          <ServicePreview kind={data.preview} />
           <h3 class="text-[1.15rem]">{data.title}</h3>
           <p class="text-muted">{data.text}</p>
           <p class="rounded-lg bg-soft px-3 py-2 text-[0.88rem]"><span class="font-semibold text-brand-strong">Exemplo:</span> {data.example}</p>

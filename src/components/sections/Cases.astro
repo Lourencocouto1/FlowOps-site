@@ -1,6 +1,7 @@
 ---
 import SectionHead from '../ui/SectionHead.astro';
 import Icon from '../ui/Icon.astro';
+import CaseMockup from '../mockups/CaseMockup.astro';
 import { getSection, getOrdered } from '../../lib/site';
 
 const head = await getSection('cases');
@@ -32,11 +33,8 @@ const tagLabel = Object.fromEntries(filters.map((f) => [f.id, f.label]));
 
     <ul class="grid gap-4 md:grid-cols-2" data-case-list>
       {cases.map(({ data }) => (
-        <li class="grid overflow-hidden rounded-[14px] border border-line bg-white" data-tags={data.tags.join(' ')}>
-          <!-- Fase 2: mockup grande ({data.device} · {data.mockup}) com animação ao passar o rato/tocar. -->
-          <div class="grid h-[270px] place-items-center border-b border-line bg-soft text-brand" aria-hidden="true">
-            <Icon name={data.device === 'phone' ? 'app' : 'website'} class="size-14" strokeWidth={1.4} />
-          </div>
+        <li class="case-card lift grid content-start overflow-hidden rounded-[14px] border border-line bg-white" data-tags={data.tags.join(' ')}>
+          <CaseMockup device={data.device} mockup={data.mockup} toast={data.toast} image={data.image} />
           <article class="grid content-start gap-2.5 px-6 pt-5 pb-6" aria-labelledby={`caso-${data.order}`}>
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h3 id={`caso-${data.order}`} class="text-[1.15rem]">{data.title}</h3>
@@ -85,6 +83,16 @@ const tagLabel = Object.fromEntries(filters.map((f) => [f.id, f.label]));
         if (match) shown++;
       });
       if (status) status.textContent = `${shown} ${shown === 1 ? 'exemplo' : 'exemplos'}`;
+    });
+  });
+
+  // Toque: em ecrãs sem rato, tocar no cartão mostra o mockup "em ação" (o rato usa :hover, o teclado :focus-within).
+  document.querySelectorAll<HTMLElement>('.case-card').forEach((card) => {
+    card.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) return;
+      const on = !card.classList.contains('is-on');
+      document.querySelectorAll('.case-card.is-on').forEach((c) => c.classList.remove('is-on'));
+      card.classList.toggle('is-on', on);
     });
   });
 </script>

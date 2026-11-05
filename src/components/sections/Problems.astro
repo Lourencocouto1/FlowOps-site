@@ -11,17 +11,17 @@ const items = await getOrdered('problems');
     <SectionHead id="problemas-title" label={head.label} title={head.title} lead={head.lead} />
     <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {items.map(({ data }) => (
-        <li class="grid content-start gap-2.5 rounded-[14px] border border-line bg-white p-6">
+        <li class="lift grid content-start gap-2.5 rounded-[14px] border border-line bg-white p-6" data-problem>
           <div class="mb-1 flex h-[52px] items-center gap-2.5" aria-hidden="true">
             <div class="flex">
               {data.icons.map((name, i) => (
-                <span class:list={['grid size-[42px] place-items-center rounded-[10px] border-[1.5px] border-[#c9d8d4] bg-white text-muted', i > 0 && '-ml-3']}>
+                <span class:list={['pb-icon grid size-[42px] place-items-center rounded-[10px] border-[1.5px] border-[#c9d8d4] bg-white text-muted', i > 0 && '-ml-3']}>
                   <Icon name={name} class="size-[22px]" strokeWidth={1.8} />
                 </span>
               ))}
             </div>
-            <span class="h-0.5 min-w-8 flex-1 rounded bg-brand/60"></span>
-            <span class="grid size-[42px] shrink-0 place-items-center rounded-full bg-brand text-white"><Icon name="ok" class="size-[22px]" strokeWidth={2.4} /></span>
+            <svg class="pb-line h-3.5 min-w-8 flex-1" viewBox="0 0 60 14" preserveAspectRatio="none"><path pathLength="1" d="M2 7 C 18 1, 36 13, 58 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-brand" vector-effect="non-scaling-stroke" /></svg>
+            <span class="pb-check grid size-[42px] shrink-0 place-items-center rounded-full bg-brand text-white"><Icon name="ok" class="size-[22px]" strokeWidth={2.4} /></span>
           </div>
           <p class="font-semibold"><span class="sr-only">Problema: </span>{data.problem}</p>
           <p class="flex gap-2 font-semibold text-brand-strong">

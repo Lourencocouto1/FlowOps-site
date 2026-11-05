@@ -1,5 +1,6 @@
 ---
 import WhatsAppIcon from '../ui/WhatsAppIcon.astro';
+import BrandF from '../ui/BrandF.astro';
 import { getSection, getSettings, whatsappHref, bookingHref, isExternal } from '../../lib/site';
 
 const head = await getSection('contact');
@@ -10,7 +11,8 @@ const ext = (href: string) => (isExternal(href) ? { target: '_blank', rel: 'noop
 const field = 'min-h-12 w-full rounded-lg border border-[#9db5af] bg-white px-3.5 text-ink focus:border-brand';
 ---
 <section class="section on-dark relative overflow-hidden bg-brand text-white" id="contacto" aria-labelledby="contacto-title">
-  <div class="container-site relative grid items-start gap-10 lg:grid-cols-2">
+  <BrandF class="wm-f text-white opacity-[0.06]" />
+  <div class="container-site relative z-[1] grid items-start gap-10 lg:grid-cols-2">
     <div class="grid gap-5">
       <p class="eyebrow text-white">{head.label}</p>
       <h2 id="contacto-title" class="text-[clamp(1.7rem,3.6vw,2.35rem)] text-white">{head.title}</h2>

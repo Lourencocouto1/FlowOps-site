@@ -1,5 +1,6 @@
 ---
 import Icon from '../ui/Icon.astro';
+import HeroPhone from '../mockups/HeroPhone.astro';
 import WhatsAppIcon from '../ui/WhatsAppIcon.astro';
 import { getSection, getSettings, whatsappHref, bookingHref, isExternal } from '../../lib/site';
 
@@ -27,9 +28,7 @@ const ext = (href: string) => (isExternal(href) ? { target: '_blank', rel: 'noop
       )}
     </div>
 
-    <!-- Fase 3: telemóvel animado (website → marcação → painel → automatização) com o F em verde-água atrás. -->
-    <div class="mx-auto grid h-[440px] w-[268px] place-items-center rounded-[38px] border-2 border-dashed border-white/25 text-center text-sm text-on-dark" aria-hidden="true">
-      Mockup animado<br />(fase 3)
-    </div>
+    <!-- Fase 3: os 4 ecrãs passam em ciclo. -->
+    <HeroPhone />
   </div>
 </section>

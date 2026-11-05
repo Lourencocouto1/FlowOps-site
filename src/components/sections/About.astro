@@ -2,6 +2,7 @@
 import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import SectionHead from '../ui/SectionHead.astro';
+import BrandF from '../ui/BrandF.astro';
 import { getSection, getOrdered } from '../../lib/site';
 
 const head = await getSection('about');
@@ -11,13 +12,14 @@ const photos = import.meta.glob<{ default: ImageMetadata }>('../../assets/team/*
 const photoFor = (file: string) => (file ? photos[`../../assets/team/${file}`]?.default : undefined);
 ---
 <section class="section relative overflow-hidden" id="sobre" aria-labelledby="sobre-title">
-  <div class="container-site relative">
+  <BrandF class="wm-f text-brand opacity-[0.06]" />
+  <div class="container-site relative z-[1]">
     <SectionHead id="sobre-title" label={head.label} title={head.title} lead={head.lead} />
     <ul class="grid gap-4 md:grid-cols-2">
       {founders.map(({ data }) => {
         const photo = photoFor(data.photo);
         return (
-          <li class="grid grid-cols-[72px_1fr] items-start gap-4 rounded-[14px] border border-line bg-white p-6">
+          <li class="lift grid grid-cols-[72px_1fr] items-start gap-4 rounded-[14px] border border-line bg-white p-6">
             {photo ? (
               <Picture src={photo} formats={['avif', 'webp']} widths={[72, 144, 216]} sizes="72px" alt={`Fotografia de ${data.name}`} class="size-[72px] rounded-full object-cover" />
             ) : (

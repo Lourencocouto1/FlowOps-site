@@ -1,0 +1,63 @@
+---
+// Telemóvel do hero com 4 ecrãs de exemplo (empresas fictícias).
+// Fase 2: mostra o primeiro ecrã. Fase 3: os ecrãs passam em ciclo.
+import Icon from '../ui/Icon.astro';
+import BrandF from '../ui/BrandF.astro';
+---
+<div class="hero-stage">
+  <BrandF class="hero-stage-f" />
+  <div class="mk-phone hero-phone" role="img" aria-label="Exemplos de soluções: o website de uma padaria, uma marcação confirmada numa clínica, o painel de gestão de uma oficina e tarefas feitas automaticamente, como lembretes e faturas enviadas.">
+    <div class="mk-screen" aria-hidden="true">
+      <div class="mk-scene is-active" data-scene="website">
+        <div class="mk-top"><b>Padaria Lumen</b><Icon name="menu" class="size-[18px]" /></div>
+        <div class="mk-site-hero">
+          <div class="mk-shapes"><i></i><i></i><i></i></div>
+          <b>Encomende hoje, levante amanhã a partir das 7h.</b>
+          <span class="mk-btn mk-btn-block">Fazer encomenda</span>
+        </div>
+        <div class="mk-list">
+          <div>Pão de centeio<span>2,40 €</span></div>
+          <div>Broa de milho<span>1,90 €</span></div>
+          <div>Croissant<span>1,30 €</span></div>
+        </div>
+      </div>
+
+      <div class="mk-scene" data-scene="booking">
+        <div class="mk-top"><b>Clínica Vértice</b><small>Fisioterapia</small></div>
+        <div class="mk-service"><div><b>Sessão de fisioterapia</b><small>50 min</small></div><span class="mk-tick"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span></div>
+        <div class="mk-day">Quinta-feira, 12 de novembro</div>
+        <div class="mk-slots">
+          <span class="busy">09:00</span><span>10:00</span><span class="busy">11:00</span>
+          <span class="picked">14:00</span><span class="busy">15:00</span><span>16:00</span>
+        </div>
+        <div class="mk-confirmed"><span class="mk-ok"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span>Marcação confirmada</div>
+      </div>
+
+      <div class="mk-scene" data-scene="dashboard">
+        <div class="mk-top"><b>Oficina Nortecar</b><small>Hoje</small></div>
+        <div class="mk-tiles"><div><b>7</b><span>Reparações em curso</span></div><div><b>3</b><span>Prontas a entregar</span></div></div>
+        <div class="mk-bars"><i style="height:40%"></i><i style="height:65%"></i><i style="height:50%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:90%"></i></div>
+        <div class="mk-bars-legend"><span>seg</span><span>dom</span></div>
+        <div class="mk-rows">
+          <div>Utilitário · R. Silva<span class="mk-pill ok">Pronto</span></div>
+          <div>Ligeiro · M. Lopes<span class="mk-pill wip">Em curso</span></div>
+          <div>Ligeiro · J. Pinto<span class="mk-pill wip">Em curso</span></div>
+        </div>
+      </div>
+
+      <div class="mk-scene" data-scene="automation">
+        <div class="mk-top"><b>Automatizações</b><small>Hoje</small></div>
+        <div class="mk-notes">
+          <div class="mk-note"><b>Lembrete enviado</b><span>Sessão amanhã às 14:00</span><span class="mk-ok"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span></div>
+          <div class="mk-note"><b>Fatura enviada</b><span>Reparação concluída · por email</span><span class="mk-ok"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span></div>
+          <div class="mk-note"><b>Encomenda pronta</b><span>Cliente avisado por SMS</span><span class="mk-ok"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span></div>
+          <div class="mk-note"><b>Relatório semanal</b><span>Enviado para a gerência</span><span class="mk-ok"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span></div>
+        </div>
+        <p class="mk-foot">O trabalho manual passa a fazer-se sozinho.</p>
+      </div>
+    </div>
+  </div>
+  <ol class="hero-steps" aria-hidden="true">
+    <li class="is-active">Website</li><li>Marcações</li><li>Gestão</li><li>Automatização</li>
+  </ol>
+</div>

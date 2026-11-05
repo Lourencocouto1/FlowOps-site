@@ -1,0 +1,57 @@
+---
+// Mini pré-visualização da interface para cada serviço (empresas fictícias).
+import Icon from '../ui/Icon.astro';
+interface Props { kind: 'website' | 'app' | 'dashboard' | 'automation' | 'integration' | 'support' }
+const { kind } = Astro.props;
+---
+<div class="sv-mini" aria-hidden="true">
+  <div class="sv-inner">
+    {kind === 'website' && (
+      <div class="mk-browser">
+        <div class="mk-browser-bar"><i></i><i></i><i></i><b></b></div>
+        <div class="mk-browser-body">
+          <span class="mk-name">Padaria Lumen</span>
+          <div class="mk-shapes sm"><i></i><i></i><i></i></div>
+          <span>Encomende hoje, levante amanhã.</span>
+          <span class="mk-btn">Fazer encomenda</span>
+        </div>
+      </div>
+    )}
+    {kind === 'app' && (
+      <div class="mk-mini-phone"><div class="mk-mini-scr">
+        <span class="mk-name">Ginásio Órbita</span>
+        <div class="mk-class"><b>Pilates · 18:00</b><span>Lugares disponíveis</span><em>Reservar</em></div>
+        <div class="mk-class"><b>Treino funcional · 19:00</b><em class="done">Reservado ✓</em></div>
+      </div></div>
+    )}
+    {kind === 'dashboard' && (
+      <div>
+        <div class="mk-tiles"><div><b>7</b><span>Reparações em curso</span></div><div><b>3</b><span>Prontas a entregar</span></div></div>
+        <div class="mk-bars boxed"><i style="height:40%"></i><i style="height:65%"></i><i style="height:50%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:90%"></i></div>
+      </div>
+    )}
+    {kind === 'automation' && (
+      <div class="mk-notes">
+        <div class="mk-note"><b>Lembrete enviado</b><span>Sessão amanhã às 14:00</span><span class="mk-ok sm"><Icon name="ok" class="size-3" strokeWidth={3} /></span></div>
+        <div class="mk-note"><b>Fatura enviada</b><span>Reparação concluída</span><span class="mk-ok sm"><Icon name="ok" class="size-3" strokeWidth={3} /></span></div>
+        <div class="mk-note"><b>Relatório semanal</b><span>Enviado para a gerência</span><span class="mk-ok sm"><Icon name="ok" class="size-3" strokeWidth={3} /></span></div>
+      </div>
+    )}
+    {kind === 'integration' && (
+      <div>
+        <div class="mk-flow"><span>Website</span><i></i><span>Agenda</span><i></i><span>Lembrete</span></div>
+        <div class="mk-cal">
+          <div class="hd"><span>seg</span><span>ter</span><span>qua</span><span>qui</span><span>sex</span></div>
+          <div class="gr"><i class="b"></i><i></i><i class="b"></i><i class="b"></i><i></i><i></i><i class="b"></i><i></i><i class="n"></i><i class="b"></i><i class="b"></i><i class="b"></i><i></i><i></i><i class="b"></i></div>
+        </div>
+      </div>
+    )}
+    {kind === 'support' && (
+      <div class="mk-status">
+        <div><span>Website e sistema</span><span class="mk-online">Online</span></div>
+        <div><span>Atualização de segurança aplicada</span><span class="mk-ok sm"><Icon name="ok" class="size-3" strokeWidth={3} /></span></div>
+        <div><span>Pedido de suporte respondido</span><span class="mk-ok sm"><Icon name="ok" class="size-3" strokeWidth={3} /></span></div>
+      </div>
+    )}
+  </div>
+</div>
