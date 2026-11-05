@@ -19,15 +19,15 @@ const steps = await getOrdered('steps');
     <ol class="relative grid gap-5 lg:grid-cols-[repeat(4,1fr)_96px] lg:gap-4">
       {steps.map(({ data }, i) => (
         <li class="grid content-start gap-4 max-lg:grid-cols-[44px_1fr]">
-          <span class="grid size-11 place-items-center rounded-full border-2 border-aqua bg-aqua font-display font-bold text-ink" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-          <div class="lift grid content-start gap-2.5 rounded-[14px] border border-white/15 bg-brand-deep p-6">
+          <span class="grid size-11 place-items-center rounded-full border-2 border-aqua bg-aqua font-display font-bold text-ink" aria-hidden="true" data-flow-node>{String(i + 1).padStart(2, '0')}</span>
+          <div class="reveal lift grid content-start gap-2.5 rounded-[14px] border border-white/15 bg-brand-deep p-6">
             <h3 class="text-[1.15rem] text-white"><span class="sr-only">Passo {i + 1}: </span>{data.title}</h3>
             {data.badge && <span class="justify-self-start rounded-full bg-amber px-2 py-0.5 text-[0.75rem] font-semibold text-ink">{data.badge}</span>}
             <p class="text-on-deep">{data.text}</p>
           </div>
         </li>
       ))}
-      <li class="grid content-start justify-items-center gap-2 text-center max-lg:grid-cols-[44px_1fr] max-lg:items-center max-lg:justify-items-start max-lg:text-left" aria-hidden="true">
+      <li class="grid content-start justify-items-center gap-2 text-center max-lg:grid-cols-[44px_1fr] max-lg:items-center max-lg:justify-items-start max-lg:text-left" aria-hidden="true" data-flow-end>
         <span class="grid size-11 place-items-center rounded-full bg-amber text-white"><Icon name="ok" class="size-6" strokeWidth={2.6} /></span>
         <span class="text-[0.85rem] font-semibold">{head.endLabel}</span>
       </li>

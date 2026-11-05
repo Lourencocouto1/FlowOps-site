@@ -12,7 +12,7 @@ const labelColor = tone === 'light' ? 'text-brand' : tone === 'dark' ? 'text-aqu
 const leadColor = tone === 'light' ? 'text-muted' : tone === 'dark' ? 'text-on-deep' : 'text-white';
 const titleColor = tone === 'light' ? 'text-ink' : 'text-white';
 ---
-<div class:list={['mb-9 grid max-w-[62ch] gap-2.5', className]}>
+<div class:list={['reveal mb-9 grid max-w-[62ch] gap-2.5', className]}>
   {label && <p class:list={['eyebrow', labelColor]}>{label}</p>}
   <h2 id={id} class:list={['text-[clamp(1.7rem,3.6vw,2.35rem)]', titleColor]}>{title}</h2>
   {lead && <p class={leadColor}>{lead}</p>}

@@ -33,7 +33,7 @@ const tagLabel = Object.fromEntries(filters.map((f) => [f.id, f.label]));
 
     <ul class="grid gap-4 md:grid-cols-2" data-case-list>
       {cases.map(({ data }) => (
-        <li class="case-card lift grid content-start overflow-hidden rounded-[14px] border border-line bg-white" data-tags={data.tags.join(' ')}>
+        <li class="reveal case-card lift grid content-start overflow-hidden rounded-[14px] border border-line bg-white" data-tags={data.tags.join(' ')}>
           <CaseMockup device={data.device} mockup={data.mockup} toast={data.toast} image={data.image} />
           <article class="grid content-start gap-2.5 px-6 pt-5 pb-6" aria-labelledby={`caso-${data.order}`}>
             <div class="flex flex-wrap items-center justify-between gap-2">

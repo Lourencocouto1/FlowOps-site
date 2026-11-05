@@ -1,0 +1,56 @@
+/* Fase 3: movimento. Só se aplica com a classe .motion no <html>, posta por um script no <head>
+   quando o utilizador não pediu movimento reduzido. Sem JS ou com movimento reduzido, tudo aparece
+   logo no estado final. */
+@layer components {
+  /* --- Hero: os 4 ecrãs em ciclo (20 s, 5 s cada) --- */
+  .motion .mk-scene { animation: mk-scene 20s infinite; }
+  .motion .mk-scene:nth-child(2) { animation-delay: -15s; }
+  .motion .mk-scene:nth-child(3) { animation-delay: -10s; }
+  .motion .mk-scene:nth-child(4) { animation-delay: -5s; }
+  @keyframes mk-scene {
+    0%, 22% { opacity: 1; }
+    25%, 97% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .motion .hero-steps li { animation: mk-step 20s infinite; }
+  .motion .hero-steps li:nth-child(2) { animation-delay: -15s; }
+  .motion .hero-steps li:nth-child(3) { animation-delay: -10s; }
+  .motion .hero-steps li:nth-child(4) { animation-delay: -5s; }
+  @keyframes mk-step {
+    0%, 24% { color: #fff; border-color: var(--color-aqua); }
+    25%, 100% { color: var(--color-on-dark); border-color: transparent; }
+  }
+  .hero-stage.is-paused .mk-scene, .hero-stage.is-paused .hero-steps li,
+  .hero-stage.is-offscreen .mk-scene, .hero-stage.is-offscreen .hero-steps li { animation-play-state: paused; }
+  .hero-pause { display: none; }
+  .motion .hero-pause { display: grid; }
+
+  /* --- Aparecimento ao fazer scroll --- */
+  .motion .reveal { transition: opacity .6s ease, transform .5s ease, box-shadow .25s ease, border-color .25s ease; }
+  .motion .reveal:not(.in) {
+    opacity: 0;
+    transform: translateY(18px);
+    /* Salvaguarda: se o JS não marcar o elemento, aparece ao fim de 4 s. */
+    animation: reveal-failsafe 0s linear 4s forwards;
+  }
+  @keyframes reveal-failsafe { to { opacity: 1; transform: none; } }
+
+  /* --- Problemas: antes → depois ao entrar no ecrã --- */
+  .pb-icon { opacity: .8; transition: opacity .5s ease .1s, color .5s ease .1s, border-color .5s ease .1s; }
+  .pb-line { transform-origin: left center; transition: transform .7s ease .45s; }
+  .pb-check { transition: transform .45s cubic-bezier(.2, .9, .3, 1.3) 1s, opacity .3s ease 1s; }
+  .motion [data-problem]:not(.in) .pb-icon { opacity: 1; color: var(--color-ink); border-color: var(--color-ink); }
+  .motion [data-problem]:not(.in) .pb-line { transform: scaleX(0); }
+  .motion [data-problem]:not(.in) .pb-check { opacity: 0; transform: scale(.3); }
+
+  /* --- Como trabalhamos: linha desenhada com o scroll --- */
+  [data-flow-node] { transition: background-color .3s ease, border-color .3s ease, color .3s ease; }
+  .motion [data-flow] [data-flow-node]:not(.lit) { background: var(--color-brand-strong); border-color: rgb(255 255 255 / .4); color: #fff; } /* 7,58 : 1 */
+  [data-flow-end] > span:first-child { transition: transform .45s cubic-bezier(.2, .9, .3, 1.3), opacity .3s ease; }
+  .motion [data-flow]:not(.done) [data-flow-end] > span:first-child { opacity: .35; transform: scale(.4); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mk-scene, .hero-steps li { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; animation: none !important; }
+  }
+}

@@ -19,7 +19,7 @@ const photoFor = (file: string) => (file ? photos[`../../assets/team/${file}`]?.
       {founders.map(({ data }) => {
         const photo = photoFor(data.photo);
         return (
-          <li class="lift grid grid-cols-[72px_1fr] items-start gap-4 rounded-[14px] border border-line bg-white p-6">
+          <li class="reveal lift grid grid-cols-[72px_1fr] items-start gap-4 rounded-[14px] border border-line bg-white p-6">
             {photo ? (
               <Picture src={photo} formats={['avif', 'webp']} widths={[72, 144, 216]} sizes="72px" alt={`Fotografia de ${data.name}`} class="size-[72px] rounded-full object-cover" />
             ) : (
@@ -34,7 +34,7 @@ const photoFor = (file: string) => (file ? photos[`../../assets/team/${file}`]?.
       })}
     </ul>
     {head.quote && (
-      <blockquote class="mt-7 max-w-[46ch] border-l-[3px] border-brand py-1 pl-6 font-display text-[clamp(1.25rem,2.6vw,1.6rem)] leading-[1.35] font-semibold tracking-[-0.01em]">
+      <blockquote class="reveal mt-7 max-w-[46ch] border-l-[3px] border-brand py-1 pl-6 font-display text-[clamp(1.25rem,2.6vw,1.6rem)] leading-[1.35] font-semibold tracking-[-0.01em]">
         <p>“{head.quote}”</p>
       </blockquote>
     )}

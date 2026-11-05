@@ -37,6 +37,8 @@ const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.si
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <!-- Ativa o movimento antes do primeiro desenho, só se o utilizador não pediu movimento reduzido. -->
+    <script is:inline>if (window.matchMedia && matchMedia('(prefers-reduced-motion: no-preference)').matches && 'IntersectionObserver' in window) document.documentElement.classList.add('motion');</script>
   </head>
   <body>
     <a href="#conteudo" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-ink focus:shadow-lg">Saltar para o conteúdo</a>
@@ -45,5 +47,8 @@ const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.si
       <slot />
     </main>
     <Footer />
+    <script>
+      import '../scripts/motion.ts';
+    </script>
   </body>
 </html>

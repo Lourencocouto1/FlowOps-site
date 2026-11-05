@@ -38,6 +38,7 @@ const deviceProfiles = [
   ['chromium', 'pixel-7-horizontal', devices['Pixel 7 landscape']],
 ];
 const engines = { chromium, webkit, firefox };
+const skipped = new Set();
 
 // Servidor do build (no Astro 7 o preview fica em segundo plano: parar no fim).
 spawn('npx', ['astro', 'preview', 'stop'], { stdio: 'ignore' });
@@ -88,8 +89,57 @@ function audit() {
   return issues;
 }
 
+/** Passagem com movimento ativo: o ciclo do hero corre e pausa, e depois de percorrer a página nada fica escondido. */
+async function runMotion(engineName, label, contextOptions) {
+  if (skipped.has(engineName)) return;
+  let browser;
+  try { browser = await engines[engineName].launch(); } catch { skipped.add(engineName); return; }
+  const context = await browser.newContext({ ...contextOptions, reducedMotion: 'no-preference' });
+  const page = await context.newPage();
+  const issues = [];
+  page.on('pageerror', (e) => issues.push(`erro JS: ${e.message}`));
+  await page.goto(`http://localhost:${port}/`, { waitUntil: 'networkidle' });
+  // O ciclo só corre com o telemóvel visível (fora do ecrã fica em pausa para poupar bateria).
+  await page.locator('.hero-phone').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  const state = await page.evaluate(() => ({
+    motion: document.documentElement.classList.contains('motion'),
+    running: [...document.querySelectorAll('.mk-scene')].every((el) => el.getAnimations().some((a) => a.playState === 'running')),
+  }));
+  if (!state.motion) issues.push('classe .motion não foi ativada');
+  if (!state.running) issues.push('o ciclo do hero não está a correr');
+  const pause = page.locator('[data-hero-pause]');
+  if (await pause.isVisible()) {
+    await pause.click();
+    const paused = await page.evaluate(() => [...document.querySelectorAll('.mk-scene')].every((el) => el.getAnimations().every((a) => a.playState === 'paused')));
+    if (!paused) issues.push('o botão de pausa não parou a animação');
+    if ((await pause.getAttribute('aria-pressed')) !== 'true') issues.push('pausa: aria-pressed não mudou');
+    await pause.click();
+  } else issues.push('botão de pausa invisível');
+  // Percorre a página como um utilizador.
+  const height = await page.evaluate(() => document.documentElement.scrollHeight);
+  const step = Math.round((contextOptions.viewport?.height || 800) * 0.6);
+  for (let y = 0; y <= height; y += step) {
+    await page.evaluate((top) => window.scrollTo(0, top), y);
+    await page.waitForTimeout(120);
+  }
+  await page.waitForTimeout(1300);
+  const after = await page.evaluate(() => ({
+    hidden: [...document.querySelectorAll('.reveal')].filter((el) => !el.classList.contains('in') || parseFloat(getComputedStyle(el).opacity) < 0.99).length,
+    flowDone: document.querySelector('[data-flow]')?.classList.contains('done'),
+    problems: [...document.querySelectorAll('[data-problem] .pb-check')].filter((el) => parseFloat(getComputedStyle(el).opacity) < 0.99).length,
+    offscreen: document.querySelector('.hero-stage')?.classList.contains('is-offscreen'),
+  }));
+  if (after.hidden) issues.push(`${after.hidden} elementos continuam escondidos depois do scroll`);
+  if (!after.flowDone) issues.push('a linha do método não chegou ao fim');
+  if (after.problems) issues.push(`${after.problems} cartões de problemas sem o ✓`);
+  if (!after.offscreen) issues.push('o hero não pausou fora do ecrã');
+  report.push({ engine: engineName, label: `${label} (movimento)`, path: '/', issues });
+  console.log(`${issues.length ? '✗' : '✓'} ${engineName.padEnd(8)} ${(label + ' movimento').padEnd(22)} /${issues.length ? '\n    - ' + issues.join('\n    - ') : ''}`);
+  await browser.close();
+}
+
 const report = [];
-const skipped = new Set();
 async function run(engineName, label, contextOptions) {
   if (skipped.has(engineName)) return;
   let browser;
@@ -136,6 +186,11 @@ try {
     for (const [label, viewport] of widths) await run(engineName, label, { viewport });
   }
   for (const [engineName, label, profile] of deviceProfiles) await run(engineName, label, profile);
+  for (const engineName of Object.keys(engines)) {
+    await runMotion(engineName, '375', { viewport: { width: 375, height: 812 } });
+    await runMotion(engineName, '1280', { viewport: { width: 1280, height: 800 } });
+  }
+  await runMotion('webkit', 'iphone-15', devices['iPhone 15']);
 } finally {
   server.kill();
   spawn('npx', ['astro', 'preview', 'stop'], { stdio: 'ignore' });

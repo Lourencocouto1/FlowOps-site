@@ -8,7 +8,7 @@ const items = await getOrdered('faq');
 <section class="section bg-soft" id="perguntas" aria-labelledby="faq-title">
   <div class="container-site">
     <SectionHead id="faq-title" label={head.label} title={head.title} lead={head.lead} class="mb-5" />
-    <div class="max-w-[760px] border-t border-line">
+    <div class="reveal max-w-[760px] border-t border-line">
       {items.map(({ data }, i) => (
         <details class="group border-b border-line py-1" open={i === 0}>
           <summary class="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 py-3 font-semibold [&::-webkit-details-marker]:hidden">

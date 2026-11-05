@@ -19,7 +19,7 @@ npm run dev               # http://localhost:4321
 | `npm run build` | Gera o site em `dist/` |
 | `npm run preview` | Serve o build localmente |
 | `npm run check` | Verifica tipos e conteúdos |
-| `npm run verify` | Verificação em Chromium, WebKit (Safari) e Firefox: 320, 375, 768, 1024, 1280, 1440, 1920 px, telemóvel na horizontal, iPhone, iPad e Android. Mede scroll horizontal, áreas de toque < 44 px, campos < 16 px e erros de JavaScript; capturas em `screenshots/` (precisa de `npx playwright install chromium firefox webkit`) |
+| `npm run verify` | Verificação em Chromium, WebKit (Safari) e Firefox: 320, 375, 768, 1024, 1280, 1440, 1920 px, telemóvel na horizontal, iPhone, iPad e Android. Mede scroll horizontal, áreas de toque < 44 px, campos < 16 px e erros de JavaScript, e faz uma passagem com movimento ativo (ciclo do hero, pausa, nada escondido depois do scroll); capturas em `screenshots/` (precisa de `npx playwright install chromium firefox webkit`) |
 
 ## Onde editar cada conteúdo
 
@@ -64,6 +64,7 @@ Alvo: as duas últimas versões de Safari (iOS e macOS), Chrome (Android e deskt
 
 - **iOS:** os campos têm sempre letra ≥ 16 px, para evitar o zoom automático. Com `viewport-fit=cover`, as margens respeitam `env(safe-area-inset-*)`. Nenhuma secção usa `100vh`; se for preciso altura de ecrã, usar `svh`/`dvh`.
 - **Toque:** todas as áreas de toque têm pelo menos 44 × 44 px, exceto links dentro de texto corrido. Nada depende só de hover; o Tailwind 4 só aplica `hover:` em dispositivos com rato.
+- **Movimento:** está em `src/styles/motion.css` e `src/scripts/motion.ts`, e só é ativado quando o sistema não pede movimento reduzido (classe `.motion` no `<html>`). Sem JavaScript, ou com movimento reduzido, tudo aparece logo no estado final. O ciclo do hero tem um botão de pausa (WCAG 2.2.2) e para sozinho quando sai do ecrã. Se o script falhar, uma salvaguarda em CSS mostra os elementos ao fim de 4 s.
 - Antes de publicar, testar também em aparelhos reais (iPhone e Android), porque a emulação não reproduz tudo.
 
 ## Marca

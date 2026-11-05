@@ -13,7 +13,7 @@ const field = 'min-h-12 w-full rounded-lg border border-[#9db5af] bg-white px-3.
 <section class="section on-dark relative overflow-hidden bg-brand text-white" id="contacto" aria-labelledby="contacto-title">
   <BrandF class="wm-f text-white opacity-[0.06]" />
   <div class="container-site relative z-[1] grid items-start gap-10 lg:grid-cols-2">
-    <div class="grid gap-5">
+    <div class="reveal grid gap-5">
       <p class="eyebrow text-white">{head.label}</p>
       <h2 id="contacto-title" class="text-[clamp(1.7rem,3.6vw,2.35rem)] text-white">{head.title}</h2>
       <p>{head.lead}</p>
@@ -29,7 +29,7 @@ const field = 'min-h-12 w-full rounded-lg border border-[#9db5af] bg-white px-3.
     </div>
 
     <!-- Envio, Turnstile e rate limiting: fase 4 (/api/contact). -->
-    <form class="relative grid gap-3.5 rounded-[14px] bg-white p-7 text-ink shadow-[0_24px_48px_-28px_rgba(0,0,0,0.45)]" method="post" action="/api/contact" novalidate data-contact-form>
+    <form class="reveal relative grid gap-3.5 rounded-[14px] bg-white p-7 text-ink shadow-[0_24px_48px_-28px_rgba(0,0,0,0.45)]" method="post" action="/api/contact" novalidate data-contact-form>
       <h3 class="text-[1.15rem]">{head.formTitle}</h3>
       <div class="grid gap-1.5">
         <label for="c-nome" class="text-[0.95rem] font-semibold">Nome</label>
