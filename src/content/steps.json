@@ -1,0 +1,27 @@
+[
+  {
+    "id": "diagnostico",
+    "order": 1,
+    "title": "Diagnóstico",
+    "badge": "Sem custo",
+    "text": "Uma reunião para perceber como o negócio funciona e o que o está a travar."
+  },
+  {
+    "id": "proposta",
+    "order": 2,
+    "title": "Proposta por escrito",
+    "text": "A solução, o preço e o prazo ficam definidos antes de começar. Só avançamos com o seu acordo."
+  },
+  {
+    "id": "desenvolvimento",
+    "order": 3,
+    "title": "Desenvolvimento acompanhado",
+    "text": "Trabalhamos por fases e o cliente vê o progresso desde o início."
+  },
+  {
+    "id": "entrega-e-suporte",
+    "order": 4,
+    "title": "Entrega e suporte contínuo",
+    "text": "Tratamos do alojamento, da manutenção e das melhorias depois da entrega."
+  }
+]

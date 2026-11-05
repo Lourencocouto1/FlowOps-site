@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/sections/Hero.astro';
+import Problems from '../components/sections/Problems.astro';
+import Services from '../components/sections/Services.astro';
+import Method from '../components/sections/Method.astro';
+import Commitments from '../components/sections/Commitments.astro';
+import Cases from '../components/sections/Cases.astro';
+import Motto from '../components/sections/Motto.astro';
+import About from '../components/sections/About.astro';
+import Pricing from '../components/sections/Pricing.astro';
+import Faq from '../components/sections/Faq.astro';
+import Contact from '../components/sections/Contact.astro';
+import { showPricing } from '../lib/site';
+---
+<BaseLayout>
+  <Hero />
+  <Problems />
+  <Services />
+  <Method />
+  <Commitments />
+  <Cases />
+  <Motto />
+  <About />
+  {showPricing && <Pricing />}
+  <Faq />
+  <Contact />
+</BaseLayout>

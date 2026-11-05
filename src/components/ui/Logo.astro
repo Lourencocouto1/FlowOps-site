@@ -1,0 +1,17 @@
+---
+// Logótipo inline (sem pedido extra). Os ficheiros vêm de public/brand/, gerados por scripts/build-brand.py.
+import light from '../../../public/brand/logo-horizontal.svg?raw';
+import dark from '../../../public/brand/logo-horizontal-dark.svg?raw';
+
+interface Props {
+  variant?: 'light' | 'dark';
+  class?: string;
+}
+const { variant = 'light', class: className = 'h-9 w-auto' } = Astro.props;
+// O nome acessível fica no link à volta do logótipo; o SVG em si é decorativo.
+const svg = (variant === 'dark' ? dark : light)
+  .replace(/<title[^>]*>.*?<\/title>/, '')
+  .replace(/ role="img" aria-labelledby="t"/, ' aria-hidden="true" focusable="false"')
+  .replace(/ width="\d+" height="\d+"/, ` class="${className}"`);
+---
+<Fragment set:html={svg} />

@@ -1,0 +1,11 @@
+---
+import { getSection } from '../../lib/site';
+const motto = await getSection('motto');
+---
+<div class="on-dark bg-ink py-14 text-center text-white">
+  <div class="container-site">
+    <p class="font-display text-[clamp(1.6rem,4vw,2.4rem)] leading-[1.15] font-extrabold tracking-[-0.025em] text-balance after:mx-auto after:mt-5 after:block after:h-1 after:w-14 after:rounded after:bg-amber">
+      {motto.title}
+    </p>
+  </div>
+</div>

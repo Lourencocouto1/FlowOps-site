@@ -1,0 +1,60 @@
+---
+import WhatsAppIcon from '../ui/WhatsAppIcon.astro';
+import { getSection, getSettings, whatsappHref, bookingHref, isExternal } from '../../lib/site';
+
+const head = await getSection('contact');
+const s = await getSettings();
+const wa = whatsappHref(s.contacts.whatsapp, s.whatsappMessage);
+const booking = bookingHref(s.contacts.whatsapp, s.whatsappMessage);
+const ext = (href: string) => (isExternal(href) ? { target: '_blank', rel: 'noopener' } : {});
+const field = 'min-h-12 w-full rounded-lg border border-[#9db5af] bg-white px-3.5 text-ink focus:border-brand';
+---
+<section class="section on-dark relative overflow-hidden bg-brand text-white" id="contacto" aria-labelledby="contacto-title">
+  <div class="container-site relative grid items-start gap-10 lg:grid-cols-2">
+    <div class="grid gap-5">
+      <p class="eyebrow text-white">{head.label}</p>
+      <h2 id="contacto-title" class="text-[clamp(1.7rem,3.6vw,2.35rem)] text-white">{head.title}</h2>
+      <p>{head.lead}</p>
+      <div class="flex flex-wrap gap-3">
+        <a href={wa} class="btn w-full bg-white text-brand hover:bg-soft hover:text-brand-strong sm:w-auto" {...ext(wa)}><WhatsAppIcon />Falar no WhatsApp</a>
+        <a href={booking} class="btn w-full border-white text-white hover:bg-white/10 sm:w-auto" {...ext(booking)}>Marcar uma conversa</a>
+      </div>
+      <ul class="grid gap-1.5 text-[0.95rem]">
+        <li>Email: {s.contacts.email ? <a class="tap font-semibold text-white" href={`mailto:${s.contacts.email}`}>{s.contacts.email}</a> : <span class="placeholder-confirm">A CONFIRMAR</span>}</li>
+        <li>WhatsApp: {s.contacts.phoneDisplay ? <span class="font-semibold">{s.contacts.phoneDisplay}</span> : <span class="placeholder-confirm">A CONFIRMAR</span>}</li>
+        <li>{s.city}, {s.country}</li>
+      </ul>
+    </div>
+
+    <!-- Envio, Turnstile e rate limiting: fase 4 (/api/contact). -->
+    <form class="relative grid gap-3.5 rounded-[14px] bg-white p-7 text-ink shadow-[0_24px_48px_-28px_rgba(0,0,0,0.45)]" method="post" action="/api/contact" novalidate data-contact-form>
+      <h3 class="text-[1.15rem]">{head.formTitle}</h3>
+      <div class="grid gap-1.5">
+        <label for="c-nome" class="text-[0.95rem] font-semibold">Nome</label>
+        <input id="c-nome" name="nome" type="text" autocomplete="name" required maxlength="100" class={field} />
+      </div>
+      <div class="grid gap-1.5">
+        <label for="c-negocio" class="text-[0.95rem] font-semibold">Negócio</label>
+        <input id="c-negocio" name="negocio" type="text" autocomplete="organization" required maxlength="120" class={field} />
+      </div>
+      <div class="grid gap-1.5">
+        <label for="c-telemovel" class="text-[0.95rem] font-semibold">Telemóvel</label>
+        <input id="c-telemovel" name="telemovel" type="tel" autocomplete="tel" inputmode="tel" required maxlength="20" class={field} />
+      </div>
+      <div class="grid gap-1.5">
+        <label for="c-mensagem" class="text-[0.95rem] font-semibold">Mensagem</label>
+        <textarea id="c-mensagem" name="mensagem" rows="4" required maxlength="2000" class={`${field} py-2.5`}></textarea>
+      </div>
+      <!-- Honeypot: invisível para pessoas, preenchido por bots. -->
+      <div class="absolute -left-[9999px]" aria-hidden="true">
+        <label for="c-website">Não preencher</label>
+        <input id="c-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+      <label for="c-rgpd" class="flex min-h-11 items-start gap-3 py-1 text-[0.88rem] text-muted">
+        <input id="c-rgpd" name="consentimento" type="checkbox" required class="mt-0.5 size-6 shrink-0 accent-brand" />
+        <span>{head.consent} <a href="/privacidade" class="font-semibold text-brand">Ler a política</a></span>
+      </label>
+      <button type="submit" class="btn btn-primary">Enviar mensagem</button>
+    </form>
+  </div>
+</section>

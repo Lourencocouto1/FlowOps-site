@@ -1,0 +1,30 @@
+[
+  {
+    "id": "tarefas-manuais",
+    "order": 1,
+    "icons": ["paper", "paper", "clock"],
+    "problem": "Tarefas manuais e repetitivas que ocupam horas todas as semanas.",
+    "solution": "Automatizamos o que se repete."
+  },
+  {
+    "id": "informacao-espalhada",
+    "order": 2,
+    "icons": ["paper", "sheet", "chat"],
+    "problem": "Informação espalhada entre papel, Excel e WhatsApp.",
+    "solution": "Um único sistema, sempre atualizado."
+  },
+  {
+    "id": "presenca-online",
+    "order": 3,
+    "icons": ["browser-question"],
+    "problem": "Sem presença online, ou com um website que não ajuda.",
+    "solution": "Um website profissional, pensado para gerar contactos."
+  },
+  {
+    "id": "pedidos-perdidos",
+    "order": 4,
+    "icons": ["chat", "mail", "phone"],
+    "problem": "Clientes e pedidos que se perdem pelo caminho.",
+    "solution": "Cada pedido registado e acompanhado até ao fim."
+  }
+]

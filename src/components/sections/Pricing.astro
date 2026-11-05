@@ -1,0 +1,12 @@
+---
+// Escondida por defeito. Mostrar com PUBLIC_SHOW_PRICING=true.
+import SectionHead from '../ui/SectionHead.astro';
+import { getSection } from '../../lib/site';
+const head = await getSection('pricing');
+---
+<section class="section" id="precos" aria-labelledby="precos-title">
+  <div class="container-site">
+    <SectionHead id="precos-title" label={head.label} title={head.title} lead={head.lead} />
+    {head.fromText && <p class="rounded-[14px] border border-line bg-soft p-6 font-semibold">{head.fromText}</p>}
+  </div>
+</section>

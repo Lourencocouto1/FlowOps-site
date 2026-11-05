@@ -1,0 +1,20 @@
+---
+# Modelo para um caso real. Copiar para <nome>.md, preencher e remover esta linha.
+title: Nome do cliente
+sector: Setor · tipo de projeto
+isDemo: false
+order: 10
+tags: [website]          # website | app | sistema | automatizacao
+device: laptop           # phone | laptop
+mockup: image            # usar "image" com o campo image abaixo
+image: ../../assets/cases/nome-do-cliente.png
+logo: ../../assets/cases/nome-do-cliente-logo.svg
+toast: Texto curto que aparece ao passar o rato
+problem: O problema, numa frase.
+solution: A solução, numa frase.
+result: Resultado real e verificável (só com dados confirmados pelo cliente).
+testimonial:
+  quote: Testemunho real, com autorização escrita.
+  author: Nome, cargo
+demoUrl: ""
+---

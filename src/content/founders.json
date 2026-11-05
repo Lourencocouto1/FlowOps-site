@@ -1,0 +1,18 @@
+[
+  {
+    "id": "lourenco-couto",
+    "order": 1,
+    "name": "Lourenço Couto",
+    "initials": "LC",
+    "bio": "Concluiu o CTeSP em Desenvolvimento para Dispositivos Móveis no ISTEC, em Lisboa, e frequenta o 2.º ano da Licenciatura em Engenharia Informática. Fez um estágio profissional de 6 meses na Unipartner, em Lisboa, a desenvolver software.",
+    "photo": ""
+  },
+  {
+    "id": "pedro-marques",
+    "order": 2,
+    "name": "Pedro Marques",
+    "initials": "PM",
+    "bio": "Concluiu o mesmo CTeSP no ISTEC e frequenta também o 2.º ano da Licenciatura em Engenharia Informática. Estagiou 6 meses na QUIC, em Lisboa, na equipa de desenvolvimento de software.",
+    "photo": ""
+  }
+]

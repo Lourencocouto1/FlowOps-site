@@ -1,0 +1,69 @@
+---
+import Logo from './ui/Logo.astro';
+import Icon from './ui/Icon.astro';
+
+interface Props { minimal?: boolean }
+const { minimal = false } = Astro.props;
+const base = minimal ? '/' : '';
+const nav = [
+  { href: `${base}#metodo`, label: 'Como funciona' },
+  { href: `${base}#casos`, label: 'Exemplos' },
+  { href: `${base}#sobre`, label: 'Sobre nós' },
+  { href: `${base}#contacto`, label: 'Contacto' },
+];
+---
+<header class="on-dark sticky top-0 z-40 border-b border-white/10 bg-ink pt-[env(safe-area-inset-top)] text-white" data-header>
+  <div class="container-site flex h-[72px] items-center justify-between gap-4 [@media(max-height:500px)]:h-14">
+    <a href="/" class="tap shrink-0 rounded-md" aria-label="FlowOps, página inicial">
+      <Logo variant="dark" class="h-8 w-auto sm:h-9" />
+    </a>
+
+    <nav aria-label="Principal" class="hidden lg:block">
+      <ul class="flex items-center gap-5 text-[0.95rem] font-medium lg:gap-7">
+        {nav.map((item) => <li><a href={item.href} class="tap text-white no-underline hover:text-aqua">{item.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <a href={`${base}#contacto`} class="btn btn-primary hidden min-h-11 px-5 text-[0.95rem] sm:inline-flex">Falar connosco</a>
+      <button
+        type="button"
+        class="grid size-11 place-items-center rounded-[10px] border border-white/25 lg:hidden"
+        aria-expanded="false"
+        aria-controls="menu-movel"
+        data-menu-toggle
+      >
+        <span class="sr-only" data-menu-label>Abrir menu</span>
+        <Icon name="menu" class="size-6" />
+      </button>
+    </div>
+  </div>
+
+  <nav id="menu-movel" aria-label="Principal (telemóvel)" class="hidden border-t border-white/10 lg:hidden" data-menu>
+    <ul class="container-site grid gap-1 py-4 text-lg font-semibold">
+      {nav.map((item) => <li><a href={item.href} class="block rounded-lg px-2 py-3 text-white no-underline hover:bg-white/5" data-menu-link>{item.label}</a></li>)}
+      <li class="pt-2"><a href={`${base}#contacto`} class="btn btn-primary w-full" data-menu-link>Falar connosco</a></li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+  // Menu do telemóvel: abre/fecha, fecha ao escolher uma opção ou com Escape.
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+  const label = document.querySelector<HTMLElement>('[data-menu-label]');
+  const setOpen = (open: boolean) => {
+    if (!toggle || !menu || !label) return;
+    toggle.setAttribute('aria-expanded', String(open));
+    menu.classList.toggle('hidden', !open);
+    label.textContent = open ? 'Fechar menu' : 'Abrir menu';
+  };
+  toggle?.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  menu?.querySelectorAll('[data-menu-link]').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+</script>

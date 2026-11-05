@@ -1,0 +1,57 @@
+{
+  "hero": {
+    "title": "Identificamos o que está a travar o seu negócio e desenvolvemos",
+    "titleAccent": "a solução certa.",
+    "lead": "Software, websites e apps à medida, para eliminar processos manuais e informação espalhada. Primeiro percebemos o problema. Depois propomos a solução, com preço e prazo acordados por escrito.",
+    "highlights": ["Diagnóstico sem custo", "Preço e prazo por escrito", "Equipa em Lisboa"]
+  },
+  "problems": {
+    "label": "Problemas que resolvemos",
+    "title": "O que costuma travar um negócio"
+  },
+  "services": {
+    "label": "O que fazemos",
+    "title": "A ferramenta certa para cada problema",
+    "lead": "Escolhemos a solução depois de perceber o problema, e não o contrário."
+  },
+  "method": {
+    "label": "Como trabalhamos",
+    "title": "Um método claro, do diagnóstico ao suporte",
+    "endLabel": "Problema resolvido"
+  },
+  "commitments": {
+    "label": "Os nossos compromissos",
+    "title": "O que pode esperar de nós"
+  },
+  "cases": {
+    "label": "Exemplos",
+    "title": "Problema, solução e resultado esperado",
+    "lead": "Projetos de demonstração com empresas fictícias, para mostrar como abordamos cada tipo de problema."
+  },
+  "motto": {
+    "title": "O trabalho manual passa a fazer-se sozinho."
+  },
+  "about": {
+    "label": "Sobre nós",
+    "title": "Quem está do outro lado",
+    "lead": "Criámos a FlowOps para pôr a formação e a experiência que temos em desenvolvimento de software ao serviço dos negócios locais. Somos de Lisboa e falamos consigo pessoalmente.",
+    "quote": "Somos de Lisboa e gostamos de resolver problemas. O seu tempo é para os seus clientes. A tecnologia fica connosco."
+  },
+  "pricing": {
+    "label": "Preços",
+    "title": "Uma proposta à medida de cada negócio",
+    "lead": "Cada projeto tem um preço fechado, definido na proposta por escrito, depois do diagnóstico sem custo.",
+    "fromText": "Manutenção e suporte a partir de [A CONFIRMAR] €/mês."
+  },
+  "faq": {
+    "label": "Perguntas frequentes",
+    "title": "Antes de falarmos"
+  },
+  "contact": {
+    "label": "Contacto",
+    "title": "Conte-nos o que está a travar o seu negócio",
+    "lead": "O diagnóstico é sem custo e não obriga a avançar. Respondemos pessoalmente.",
+    "formTitle": "Envie-nos uma mensagem",
+    "consent": "Aceito que a FlowOps use estes dados para responder ao meu pedido, conforme a Política de Privacidade."
+  }
+}

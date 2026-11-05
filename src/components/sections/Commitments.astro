@@ -1,0 +1,23 @@
+---
+import SectionHead from '../ui/SectionHead.astro';
+import Icon from '../ui/Icon.astro';
+import { getSection, getOrdered } from '../../lib/site';
+
+const head = await getSection('commitments');
+const items = await getOrdered('commitments');
+---
+<section class="section" id="compromissos" aria-labelledby="compromissos-title">
+  <div class="container-site">
+    <SectionHead id="compromissos-title" label={head.label} title={head.title} lead={head.lead} />
+    <ul class="grid gap-4 md:grid-cols-2">
+      {items.map(({ data }) => (
+        <li class="relative grid content-start gap-3 overflow-hidden rounded-[14px] border border-line bg-white p-7 before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-brand">
+          <span class="grid size-[60px] place-items-center rounded-2xl bg-brand text-white"><Icon name={data.icon} class="size-[30px]" strokeWidth={2} /></span>
+          <h3 class="text-[1.15rem]">{data.title}</h3>
+          <p class="text-muted">{data.text}</p>
+          {data.practice && <p class="border-t border-line pt-3 text-[0.88rem]"><span class="font-semibold text-brand-strong">Na prática:</span> {data.practice}</p>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

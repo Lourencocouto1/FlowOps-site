@@ -1,0 +1,33 @@
+[
+  {
+    "id": "preco-e-prazo",
+    "order": 1,
+    "icon": "document",
+    "title": "Preço e prazo acordados por escrito",
+    "text": "Sem surpresas. Antes de começar, sabe o que vai receber, quanto custa e quando fica pronto.",
+    "practice": "uma proposta escrita, aceite por si antes de qualquer trabalho."
+  },
+  {
+    "id": "dados-e-codigo",
+    "order": 2,
+    "icon": "key",
+    "title": "O sistema e os dados são do cliente",
+    "text": "Os seus dados são sempre seus. Pode exportá-los quando quiser. Em projetos desenvolvidos à medida, o código é entregue ao cliente no fim do projeto; os termos ficam definidos na proposta."
+  },
+  {
+    "id": "seguranca-rgpd",
+    "order": 3,
+    "icon": "shield",
+    "title": "Segurança e RGPD desde o início",
+    "text": "A proteção de dados faz parte do projeto desde o primeiro dia, e não é acrescentada no fim.",
+    "practice": "acessos protegidos e dados usados apenas para o fim combinado."
+  },
+  {
+    "id": "suporte",
+    "order": 4,
+    "icon": "clock",
+    "title": "Suporte com tempo de resposta definido",
+    "text": "Respondemos a pedidos de suporte até 1 dia útil.",
+    "practice": "o tempo de resposta fica escrito na proposta."
+  }
+]

@@ -1,0 +1,90 @@
+---
+import SectionHead from '../ui/SectionHead.astro';
+import Icon from '../ui/Icon.astro';
+import { getSection, getOrdered } from '../../lib/site';
+
+const head = await getSection('cases');
+const cases = await getOrdered('cases');
+const filters = [
+  { id: 'todos', label: 'Todos' },
+  { id: 'website', label: 'Website' },
+  { id: 'app', label: 'App' },
+  { id: 'sistema', label: 'Sistema' },
+  { id: 'automatizacao', label: 'Automatização' },
+] as const;
+const tagLabel = Object.fromEntries(filters.map((f) => [f.id, f.label]));
+---
+<section class="section bg-soft" id="casos" aria-labelledby="casos-title">
+  <div class="container-site">
+    <SectionHead id="casos-title" label={head.label} title={head.title} lead={head.lead} />
+
+    <div class="mb-5 flex flex-wrap gap-2" role="group" aria-label="Filtrar exemplos por tipo de projeto" data-case-filters>
+      {filters.map((f, i) => (
+        <button
+          type="button"
+          class="min-h-11 rounded-lg border border-[#c9d8d4] bg-white px-4 text-[0.9rem] font-semibold aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-white"
+          aria-pressed={i === 0 ? 'true' : 'false'}
+          data-filter={f.id}
+        >{f.label}</button>
+      ))}
+    </div>
+    <p class="sr-only" aria-live="polite" data-case-status></p>
+
+    <ul class="grid gap-4 md:grid-cols-2" data-case-list>
+      {cases.map(({ data }) => (
+        <li class="grid overflow-hidden rounded-[14px] border border-line bg-white" data-tags={data.tags.join(' ')}>
+          <!-- Fase 2: mockup grande ({data.device} · {data.mockup}) com animação ao passar o rato/tocar. -->
+          <div class="grid h-[270px] place-items-center border-b border-line bg-soft text-brand" aria-hidden="true">
+            <Icon name={data.device === 'phone' ? 'app' : 'website'} class="size-14" strokeWidth={1.4} />
+          </div>
+          <article class="grid content-start gap-2.5 px-6 pt-5 pb-6" aria-labelledby={`caso-${data.order}`}>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 id={`caso-${data.order}`} class="text-[1.15rem]">{data.title}</h3>
+              {data.isDemo && <span class="rounded-md border border-[#c9d8d4] px-2 py-0.5 text-[0.74rem] font-semibold text-muted">Projeto de demonstração</span>}
+            </div>
+            <p class="-mt-1.5 text-[0.85rem] text-muted">{data.sector}</p>
+            <dl class="mt-1.5 grid gap-3">
+              <div><dt class="text-[0.74rem] font-semibold tracking-[0.06em] text-brand uppercase">Problema</dt><dd class="mt-0.5 text-[0.95rem]">{data.problem}</dd></div>
+              <div><dt class="text-[0.74rem] font-semibold tracking-[0.06em] text-brand uppercase">Solução</dt><dd class="mt-0.5 text-[0.95rem]">{data.solution}</dd></div>
+              <div><dt class="text-[0.74rem] font-semibold tracking-[0.06em] text-brand uppercase">{data.isDemo ? 'Resultado esperado' : 'Resultado'}</dt><dd class="mt-0.5 text-[0.95rem]">{data.result}</dd></div>
+            </dl>
+            {data.testimonial && (
+              <blockquote class="border-l-[3px] border-brand pl-4 text-[0.95rem]">
+                <p>“{data.testimonial.quote}”</p>
+                <footer class="mt-1 text-[0.85rem] text-muted">{data.testimonial.author}</footer>
+              </blockquote>
+            )}
+            <ul class="flex flex-wrap gap-1.5 pt-1.5" aria-label="Tipo de projeto">
+              {data.tags.map((t) => <li class="rounded-md bg-[#f1f4f3] px-2 py-0.5 text-[0.74rem] font-semibold text-muted">{tagLabel[t]}</li>)}
+            </ul>
+            {data.demoUrl && (
+              <a class="inline-flex min-h-11 items-center gap-1.5 justify-self-start font-semibold text-brand no-underline" href={data.demoUrl} target="_blank" rel="noopener">
+                Ver demonstração<span class="sr-only"> de {data.title} (abre noutra janela)</span><Icon name="external" class="size-4" />
+              </a>
+            )}
+          </article>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<script>
+  // Filtros do portefólio: mostra só os casos do tipo escolhido.
+  const group = document.querySelector('[data-case-filters]');
+  const items = document.querySelectorAll<HTMLElement>('[data-case-list] > li');
+  const status = document.querySelector('[data-case-status]');
+  group?.querySelectorAll<HTMLButtonElement>('button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const f = btn.dataset.filter ?? 'todos';
+      group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      let shown = 0;
+      items.forEach((li) => {
+        const match = f === 'todos' || (li.dataset.tags ?? '').split(' ').includes(f);
+        li.hidden = !match;
+        if (match) shown++;
+      });
+      if (status) status.textContent = `${shown} ${shown === 1 ? 'exemplo' : 'exemplos'}`;
+    });
+  });
+</script>

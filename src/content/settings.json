@@ -1,0 +1,20 @@
+{
+  "site": {
+    "name": "FlowOps",
+    "tagline": "O trabalho manual passa a fazer-se sozinho.",
+    "description": "Desenvolvemos software, websites e apps à medida para resolver os problemas concretos de cada negócio. Diagnóstico sem custo, preço e prazo acordados por escrito. Lisboa.",
+    "city": "Lisboa",
+    "country": "Portugal",
+    "contacts": {
+      "_nota": "[A CONFIRMAR] Preencher whatsapp (só dígitos, com indicativo, ex.: 351912345678), email e redes. Enquanto estiverem vazios, os botões levam à secção de contacto.",
+      "whatsapp": "",
+      "email": "",
+      "phoneDisplay": ""
+    },
+    "social": {
+      "instagram": "",
+      "linkedin": ""
+    },
+    "whatsappMessage": "Olá! Vi o site da FlowOps e gostava de saber mais."
+  }
+}

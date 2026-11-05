@@ -1,0 +1,50 @@
+[
+  {
+    "id": "websites",
+    "order": 1,
+    "title": "Websites",
+    "text": "Sites profissionais e rápidos, pensados para serem encontrados e gerarem contactos.",
+    "example": "website de uma padaria com encomendas para o dia seguinte.",
+    "preview": "website"
+  },
+  {
+    "id": "apps",
+    "order": 2,
+    "title": "Apps",
+    "text": "Aplicações Android e iOS, a área em que temos formação específica.",
+    "example": "app para os sócios de um ginásio reservarem aulas.",
+    "preview": "app"
+  },
+  {
+    "id": "sistemas-de-gestao",
+    "order": 3,
+    "title": "Sistemas de gestão à medida",
+    "text": "Clientes, pedidos, stock e agenda num só sistema, simples de usar.",
+    "example": "painel de reparações da Oficina Nortecar.",
+    "preview": "dashboard"
+  },
+  {
+    "id": "automatizacoes",
+    "order": 4,
+    "title": "Automatizações",
+    "text": "Lembretes, emails, faturas e relatórios que se fazem sozinhos.",
+    "example": "aviso automático ao cliente quando a encomenda está pronta.",
+    "preview": "automation"
+  },
+  {
+    "id": "integracoes",
+    "order": 5,
+    "title": "Integrações",
+    "text": "Ligamos as ferramentas que o negócio já utiliza.",
+    "example": "marcações do website da Clínica Vértice a entrar diretamente na agenda.",
+    "preview": "integration"
+  },
+  {
+    "id": "manutencao-e-suporte",
+    "order": 6,
+    "title": "Manutenção e suporte",
+    "text": "Alojamento, atualizações de segurança e melhorias contínuas.",
+    "example": "correções e pequenas alterações tratadas por nós.",
+    "preview": "support"
+  }
+]

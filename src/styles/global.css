@@ -1,0 +1,71 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/manrope/wght.css';
+@import '@fontsource-variable/inter/wght.css';
+
+/* Tokens da marca (brand board aprovada). Contrastes WCAG em README.md. */
+@theme {
+  --color-brand: #0f766e;
+  --color-brand-strong: #115e59;
+  --color-brand-deep: #0c4e4a;
+  --color-aqua: #5eead4;
+  --color-amber: #f59e0b;
+  --color-ink: #0f1f1c;
+  --color-muted: #4b5b57;
+  --color-soft: #f0faf7;
+  --color-line: #e1eae7;
+  --color-on-dark: #b8ccc7;
+  --color-on-deep: #cfe7e2;
+
+  --font-display: 'Manrope Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+@layer base {
+  /* Campos com pelo menos 16 px: evita o zoom automático do iOS ao tocar. */
+  input, textarea, select { font-size: max(16px, 1em); }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+  body {
+    @apply bg-white font-sans text-ink antialiased;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  h1, h2, h3 {
+    @apply font-display text-balance;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.12;
+  }
+  h3 { font-weight: 700; letter-spacing: -0.01em; }
+  :focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  .on-dark :focus-visible { outline-color: var(--color-aqua); }
+}
+
+@layer components {
+  /* Margens laterais respeitam as áreas seguras do iPhone (notch em modo horizontal). */
+  .container-site {
+    @apply mx-auto w-full max-w-[1120px];
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+  /* Área de toque mínima de 44 × 44 px para links fora de texto corrido. */
+  .tap { @apply inline-flex min-h-11 min-w-11 items-center; }
+  .section { @apply py-16 md:py-20; }
+  .eyebrow { @apply text-[0.78rem] font-semibold uppercase tracking-[0.08em] text-brand; }
+  .btn {
+    @apply inline-flex min-h-[52px] items-center justify-center gap-2.5 rounded-[10px] border-[1.5px] border-transparent px-6 font-semibold leading-none no-underline transition-colors;
+  }
+  .btn-primary { @apply bg-brand text-white hover:bg-brand-strong; }
+  .btn-ghost { @apply border-[#b9cbc6] bg-white text-ink hover:border-brand hover:text-brand; }
+  .placeholder-confirm { @apply rounded-md bg-[#fef3c7] px-2 py-0.5 text-[0.78rem] font-semibold text-[#78350f]; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+}

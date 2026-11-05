@@ -1,0 +1,70 @@
+---
+import Logo from './ui/Logo.astro';
+import { getSettings, whatsappHref } from '../lib/site';
+
+const s = await getSettings();
+const year = new Date().getFullYear();
+const wa = whatsappHref(s.contacts.whatsapp, s.whatsappMessage);
+---
+<footer class="on-dark bg-ink pt-14 pb-[max(2rem,env(safe-area-inset-bottom))] text-[0.92rem] text-on-dark">
+  <div class="container-site">
+    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid content-start gap-3">
+        <a href="/" class="tap justify-self-start rounded-md" aria-label="FlowOps, página inicial"><Logo variant="dark" class="h-9 w-auto" /></a>
+        <p>Software, websites e apps à medida para negócios em {s.city}.</p>
+      </div>
+
+      <div>
+        <h2 class="mb-3 font-sans text-[0.8rem] font-semibold tracking-[0.06em] text-white uppercase">Contactos</h2>
+        <ul class="grid">
+          <li>
+            {s.contacts.email
+              ? <a class="tap text-white no-underline hover:text-aqua" href={`mailto:${s.contacts.email}`}>{s.contacts.email}</a>
+              : <>Email <span class="placeholder-confirm">A CONFIRMAR</span></>}
+          </li>
+          <li>
+            {s.contacts.whatsapp
+              ? <a class="tap text-white no-underline hover:text-aqua" href={wa} rel="noopener">WhatsApp</a>
+              : <>WhatsApp <span class="placeholder-confirm">A CONFIRMAR</span></>}
+          </li>
+          <li class="flex min-h-11 items-center">{s.city}, {s.country}</li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="mb-3 font-sans text-[0.8rem] font-semibold tracking-[0.06em] text-white uppercase">Navegação</h2>
+        <ul class="grid">
+          <li><a class="tap text-white no-underline hover:text-aqua" href="/#metodo">Como funciona</a></li>
+          <li><a class="tap text-white no-underline hover:text-aqua" href="/#casos">Exemplos</a></li>
+          <li><a class="tap text-white no-underline hover:text-aqua" href="/#sobre">Sobre nós</a></li>
+          <li><a class="tap text-white no-underline hover:text-aqua" href="/#contacto">Contacto</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="mb-3 font-sans text-[0.8rem] font-semibold tracking-[0.06em] text-white uppercase">Redes</h2>
+        <ul class="grid">
+          <li>
+            {s.social.instagram
+              ? <a class="tap text-white no-underline hover:text-aqua" href={s.social.instagram} rel="noopener">Instagram</a>
+              : <>Instagram <span class="placeholder-confirm">A CONFIRMAR</span></>}
+          </li>
+          <li>
+            {s.social.linkedin
+              ? <a class="tap text-white no-underline hover:text-aqua" href={s.social.linkedin} rel="noopener">LinkedIn</a>
+              : <>LinkedIn <span class="placeholder-confirm">A CONFIRMAR</span></>}
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-10 flex flex-wrap justify-between gap-x-6 gap-y-2 border-t border-[#2a3f3b] pt-5">
+      <span>© {year} FlowOps</span>
+      <span>
+        <a class="tap text-white no-underline hover:text-aqua" href="/privacidade">Política de Privacidade</a>
+        <span aria-hidden="true"> · </span>
+        <a class="tap text-white no-underline hover:text-aqua" href="/termos">Termos</a>
+      </span>
+    </div>
+  </div>
+</footer>

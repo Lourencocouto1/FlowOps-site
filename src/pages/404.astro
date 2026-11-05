@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Página não encontrada" minimal noindex>
+  <section class="container-site grid max-w-[640px] justify-items-start gap-5 py-24">
+    <p class="eyebrow">Erro 404</p>
+    <h1 class="text-[clamp(2rem,4vw,2.75rem)]">Esta página não existe.</h1>
+    <p class="text-muted">O link pode estar desatualizado. Volte à página inicial ou fale connosco.</p>
+    <div class="flex flex-wrap gap-3">
+      <a href="/" class="btn btn-primary">Voltar ao início</a>
+      <a href="/#contacto" class="btn btn-ghost">Falar connosco</a>
+    </div>
+  </section>
+</BaseLayout>

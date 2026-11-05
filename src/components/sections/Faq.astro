@@ -1,0 +1,23 @@
+---
+import SectionHead from '../ui/SectionHead.astro';
+import { getSection, getOrdered } from '../../lib/site';
+
+const head = await getSection('faq');
+const items = await getOrdered('faq');
+---
+<section class="section bg-soft" id="perguntas" aria-labelledby="faq-title">
+  <div class="container-site">
+    <SectionHead id="faq-title" label={head.label} title={head.title} lead={head.lead} class="mb-5" />
+    <div class="max-w-[760px] border-t border-line">
+      {items.map(({ data }, i) => (
+        <details class="group border-b border-line py-1" open={i === 0}>
+          <summary class="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 py-3 font-semibold [&::-webkit-details-marker]:hidden">
+            <span>{data.question}</span>
+            <span class="grid size-7 shrink-0 place-items-center rounded-full border border-[#c9d8d4] text-brand transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+          </summary>
+          <p class="max-w-[62ch] pb-4 text-muted">{data.answer}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

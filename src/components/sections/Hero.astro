@@ -1,0 +1,35 @@
+---
+import Icon from '../ui/Icon.astro';
+import WhatsAppIcon from '../ui/WhatsAppIcon.astro';
+import { getSection, getSettings, whatsappHref, bookingHref, isExternal } from '../../lib/site';
+
+const hero = await getSection('hero');
+const s = await getSettings();
+const wa = whatsappHref(s.contacts.whatsapp, s.whatsappMessage);
+const booking = bookingHref(s.contacts.whatsapp, s.whatsappMessage);
+const ext = (href: string) => (isExternal(href) ? { target: '_blank', rel: 'noopener' } : {});
+---
+<section class="on-dark relative overflow-hidden bg-ink text-white" aria-labelledby="hero-title">
+  <div class="container-site grid items-center gap-12 pt-10 pb-20 md:pt-14 lg:grid-cols-[1.15fr_0.85fr] lg:pb-24">
+    <div class="grid max-w-[36rem] gap-6">
+      <h1 id="hero-title" class="text-[clamp(2rem,4.6vw,3.2rem)] text-white">
+        {hero.title} <span class="text-aqua">{hero.titleAccent}</span>
+      </h1>
+      <p class="max-w-[54ch] text-[1.15rem] text-on-dark">{hero.lead}</p>
+      <div class="flex flex-wrap gap-3">
+        <a href={wa} class="btn btn-primary w-full sm:w-auto" {...ext(wa)}><WhatsAppIcon />Falar no WhatsApp</a>
+        <a href={booking} class="btn w-full border-white/55 text-white hover:border-aqua hover:text-aqua sm:w-auto" {...ext(booking)}>Marcar uma conversa</a>
+      </div>
+      {hero.highlights && (
+        <ul class="flex flex-wrap gap-x-6 gap-y-2.5 border-t border-[#2a3f3b] pt-5 text-[0.92rem]">
+          {hero.highlights.map((h) => <li class="inline-flex items-center gap-2"><Icon name="ok" class="size-[18px] text-aqua" strokeWidth={2.4} />{h}</li>)}
+        </ul>
+      )}
+    </div>
+
+    <!-- Fase 3: telemóvel animado (website → marcação → painel → automatização) com o F em verde-água atrás. -->
+    <div class="mx-auto grid h-[440px] w-[268px] place-items-center rounded-[38px] border-2 border-dashed border-white/25 text-center text-sm text-on-dark" aria-hidden="true">
+      Mockup animado<br />(fase 3)
+    </div>
+  </div>
+</section>

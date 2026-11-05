@@ -1,0 +1,38 @@
+[
+  {
+    "id": "informatica",
+    "order": 1,
+    "question": "Preciso de saber de informática?",
+    "answer": "Não. Tratamos de toda a parte técnica e explicamos o funcionamento à sua equipa, sem termos técnicos."
+  },
+  {
+    "id": "tipos-de-projeto",
+    "order": 2,
+    "question": "Que tipo de projetos fazem?",
+    "answer": "Websites, apps, sistemas de gestão, automatizações e integrações entre ferramentas. A solução depende do problema que o negócio precisa de resolver."
+  },
+  {
+    "id": "custo",
+    "order": 3,
+    "question": "Quanto custa um projeto?",
+    "answer": "Depende do que for preciso. Depois do diagnóstico, que é sem custo, enviamos uma proposta por escrito com o preço e o prazo, antes de começarmos."
+  },
+  {
+    "id": "prazo",
+    "order": 4,
+    "question": "Quanto tempo demora?",
+    "answer": "Depende da solução. O prazo fica definido na proposta por escrito, depois do diagnóstico sem custo."
+  },
+  {
+    "id": "manutencao",
+    "order": 5,
+    "question": "Quem trata da manutenção depois?",
+    "answer": "Nós. Tratamos do alojamento, das atualizações e das melhorias, e respondemos a pedidos de suporte até 1 dia útil."
+  },
+  {
+    "id": "dados",
+    "order": 6,
+    "question": "Os dados do meu negócio estão seguros?",
+    "answer": "Sim. Aplicamos boas práticas de segurança e cumprimos o RGPD desde o início do projeto. Os dados são sempre seus e pode exportá-los quando quiser."
+  }
+]

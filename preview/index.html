@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlowOps · Pré-visualização de marca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Inter:wght@400..800&family=Manrope:wght@700..800&family=Outfit:wght@700..900&family=Plus+Jakarta+Sans:wght@800&family=Lexend:wght@700&display=swap" rel="stylesheet">
+<style>
+/* Layout: página de revisão em coluna única; primeiro o site com a marca aprovada, depois a identidade (logótipo, wordmark, cor). Branco dominante, âmbar só em pormenores. */
+:root {
+  --accent: #0F766E;
+  --accent-strong: #115E59;
+  --aqua: #5EEAD4;
+  --amber: #F59E0B;
+  --ink: #0F1F1C;
+  --muted: #4B5B57;
+  --paper: #FFFFFF;
+  --soft: #F0FAF7;
+  --line: #E1EAE7;
+  --f-bricolage: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-manrope: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-inter: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-wordmark: "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: var(--f-bricolage);
+  --display-weight: 700;
+  --display-track: -0.02em;
+  --body: var(--f-inter);
+  /* cores do logótipo (por defeito: versão clara) */
+  --logo-f: var(--accent);
+  --logo-circle: var(--amber);
+  --logo-check: #FFFFFF;
+  --logo-text: var(--ink);
+  color-scheme: light;
+}
+:root[data-font="manrope"] { --display: var(--f-manrope); --display-weight: 800; --display-track: -0.025em; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.6; }
+img, svg { max-width: 100%; }
+h1, h2, h3 { font-family: var(--display); font-weight: var(--display-weight); line-height: 1.12; text-wrap: balance; margin: 0; letter-spacing: var(--display-track); }
+h2 { font-size: clamp(1.7rem, 3.6vw, 2.35rem); }
+h3 { font-size: 1.15rem; letter-spacing: -0.01em; }
+p { margin: 0; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+.section { padding: 72px 0; border-top: 1px solid var(--line); }
+.section-head { display: grid; gap: 10px; margin-bottom: 36px; max-width: 62ch; }
+.label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.note { color: var(--muted); }
+.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85em; }
+.tag-confirm { background: #FEF3C7; color: #78350F; font-weight: 600; font-size: 0.78rem; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+
+/* Barra de revisão */
+.review-bar { background: var(--ink); color: #C9D8D4; font-size: 0.88rem; }
+.review-bar .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; justify-content: space-between; padding-top: 12px; padding-bottom: 12px; }
+.review-bar strong { color: #fff; }
+.review-bar a { color: var(--aqua); }
+.font-switch { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.font-switch button { font: 600 0.82rem/1 var(--f-inter); min-height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid #3A4D49; background: transparent; color: #E6EFED; cursor: pointer; }
+.font-switch button[aria-pressed="true"] { background: #fff; color: var(--ink); border-color: #fff; }
+
+/* Logótipo: lockups */
+.lockup { display: inline-flex; align-items: center; gap: 0.3em; color: var(--logo-text); text-decoration: none; font-family: var(--f-wordmark); font-weight: 800; letter-spacing: -0.015em; line-height: 1; }
+.lockup svg { width: 1.28em; height: 1.15em; flex: none; }
+.lockup.v { flex-direction: column; gap: 0.25em; }
+.lockup.v svg { width: 2.2em; height: 1.98em; }
+.on-dark { --logo-f: var(--aqua); --logo-text: #FFFFFF; }
+.on-green { --logo-f: #FFFFFF; --logo-text: #FFFFFF; }
+
+/* Botões */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 24px; border-radius: 10px; font: 600 1rem/1 var(--body); text-decoration: none; border: 1.5px solid transparent; cursor: pointer; transition: background-color .15s ease, border-color .15s ease, transform .1s ease; }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-strong); }
+.btn-ghost { background: var(--paper); color: var(--ink); border-color: #B9CBC6; }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn svg { width: 20px; height: 20px; }
+
+/* Cabeçalho e hero */
+.site-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 0; }
+.site-header .lockup { font-size: 1.55rem; }
+.site-nav { display: flex; gap: 26px; font-weight: 500; font-size: 0.95rem; }
+.site-nav a { color: var(--ink); text-decoration: none; }
+.site-nav a:hover { color: var(--accent); }
+.site-header .btn { min-height: 44px; padding: 0 18px; font-size: 0.95rem; }
+.menu-btn { display: none; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); }
+.hero { display: grid; gap: 48px; align-items: center; padding: 40px 0 88px; }
+.hero h1 { font-size: clamp(2rem, 4.6vw, 3.2rem); }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero-copy { display: grid; gap: 24px; max-width: 36rem; }
+.hero-lead { font-size: 1.15rem; color: var(--muted); max-width: 54ch; }
+.hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero-trust { display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: 0.92rem; padding-top: 20px; border-top: 1px solid var(--line); }
+.hero-trust span { display: inline-flex; align-items: center; gap: 8px; }
+.hero-trust svg { width: 18px; height: 18px; color: var(--accent); flex: none; }
+@media (min-width: 900px) { .hero { grid-template-columns: 1.15fr 0.85fr; } }
+@media (max-width: 860px) {
+  .site-nav, .site-header .btn { display: none; }
+  .menu-btn { display: inline-grid; place-items: center; }
+}
+@media (max-width: 560px) { .hero-ctas .btn { width: 100%; } }
+
+/* Telemóvel com 4 cenas em loop (só fade) */
+.phone-stage { display: grid; justify-items: center; gap: 18px; }
+.phone { position: relative; width: 268px; background: var(--ink); border-radius: 38px; padding: 11px; box-shadow: 0 24px 48px -28px rgba(15,31,28,.4); }
+.screen { position: relative; color: var(--ink); background: var(--paper); border-radius: 28px; height: 420px; overflow: hidden; font-size: 0.8rem; line-height: 1.4; }
+.scene { position: absolute; inset: 0; padding: 26px 16px 18px; display: grid; gap: 12px; align-content: start; opacity: 0; animation: scene 20s infinite; }
+.scene.s1 { opacity: 1; }
+.scene.s2 { animation-delay: -15s; }
+.scene.s3 { animation-delay: -10s; }
+.scene.s4 { animation-delay: -5s; }
+@keyframes scene { 0%, 22% { opacity: 1; } 25%, 97% { opacity: 0; } 100% { opacity: 1; } }
+.steps-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.steps-strip span { padding-bottom: 4px; border-bottom: 2px solid transparent; animation: step 20s infinite; }
+.steps-strip span:nth-child(2) { animation-delay: -15s; }
+.steps-strip span:nth-child(3) { animation-delay: -10s; }
+.steps-strip span:nth-child(4) { animation-delay: -5s; }
+@keyframes step { 0%, 24% { color: var(--ink); border-color: var(--accent); } 25%, 100% { color: var(--muted); border-color: transparent; } }
+@media (prefers-reduced-motion: reduce) {
+  .scene, .steps-strip span { animation: none; }
+  .scene.s4 { opacity: 1; }
+  .scene.s1 { opacity: 0; }
+  .steps-strip span:last-child { color: var(--ink); border-color: var(--accent); }
+}
+.scr-top { display: flex; justify-content: space-between; align-items: center; }
+.scr-top b { font-family: var(--display); font-weight: 700; font-size: 0.98rem; }
+.scr-top small { color: var(--muted); }
+.scr-top svg { width: 18px; height: 18px; }
+.site-hero { border-radius: 12px; background: var(--soft); padding: 14px; display: grid; gap: 10px; }
+.shapes { display: flex; gap: 6px; }
+.shapes i { display: block; height: 44px; flex: 1; border-radius: 8px; background: #CFE6E0; }
+.shapes i:nth-child(2) { background: #A9D3CA; flex: 1.4; }
+.site-hero b { font-family: var(--display); font-weight: 700; font-size: 1rem; line-height: 1.25; }
+.mini-btn { display: block; text-align: center; background: var(--accent); color: #fff; border-radius: 8px; padding: 9px; font-weight: 600; }
+.menu-list { display: grid; gap: 6px; }
+.menu-list div { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 4px 0; }
+.menu-list span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.service { display: flex; justify-content: space-between; align-items: center; border: 1.5px solid var(--accent); border-radius: 10px; padding: 10px 12px; }
+.service b { display: block; }
+.service small { color: var(--muted); }
+.tick { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; }
+.tick svg { width: 14px; height: 14px; }
+.day { font-weight: 600; }
+.slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-variant-numeric: tabular-nums; }
+.slot { text-align: center; padding: 8px 0; border-radius: 8px; border: 1px solid var(--line); font-weight: 600; }
+.slot.busy { background: #F1F4F3; color: var(--muted); text-decoration: line-through; border-color: transparent; font-weight: 500; }
+.slot.picked { background: var(--accent); color: #fff; border-color: var(--accent); }
+.confirmed { display: flex; gap: 10px; align-items: center; background: var(--soft); color: var(--accent-strong); border-radius: 10px; padding: 11px 12px; font-weight: 600; }
+.ok-amber { width: 24px; height: 24px; border-radius: 50%; background: var(--amber); color: var(--ink); display: grid; place-items: center; flex: none; }
+.ok-amber svg { width: 14px; height: 14px; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tiles div { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; }
+.tiles b { font-family: var(--display); font-weight: 700; font-size: 1.5rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tiles span { color: var(--muted); font-size: 0.72rem; }
+.bars { display: flex; align-items: end; gap: 6px; height: 60px; padding: 0 2px; border-bottom: 1px solid var(--line); }
+.bars i { flex: 1; background: #CFE6E0; border-radius: 3px 3px 0 0; }
+.bars i:last-child { background: var(--accent); }
+.bars-legend { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.68rem; margin-top: -6px; }
+.rows { display: grid; gap: 6px; }
+.rows div { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.pill { font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { background: #DDF0EC; color: #0B5C55; }
+.pill.wip { background: #F1F4F3; color: var(--muted); }
+.auto-list { display: grid; gap: 8px; }
+.auto-item { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.auto-item b { font-size: 0.8rem; }
+.auto-item span { font-size: 0.74rem; color: var(--muted); grid-column: 1; }
+.auto-item .ok-amber { grid-row: span 2; grid-column: 2; grid-row-start: 1; }
+.auto-foot { text-align: center; font-family: var(--display); font-weight: 700; font-size: 0.95rem; line-height: 1.3; color: var(--accent-strong); padding-top: 6px; }
+
+/* Grelhas e cartões */
+.grid-2 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.grid-3 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+.grid-4 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.card { border: 1px solid var(--line); border-radius: 14px; padding: 24px; display: grid; gap: 10px; align-content: start; background: var(--paper); }
+.problem .pain { font-weight: 600; }
+.problem .fix { color: var(--accent-strong); font-weight: 600; display: flex; gap: 8px; }
+.problem .fix svg { width: 18px; height: 18px; flex: none; margin-top: 3px; }
+.icon { width: 42px; height: 42px; border-radius: 10px; border: 1px solid var(--line); color: var(--accent); display: grid; place-items: center; }
+.icon svg { width: 22px; height: 22px; }
+.example { font-size: 0.88rem; color: var(--ink); background: var(--soft); border-radius: 8px; padding: 8px 12px; }
+.example b { color: var(--accent-strong); font-weight: 600; }
+.motto { padding: 56px 0; border-top: 1px solid var(--line); text-align: center; }
+.motto p { font-family: var(--display); font-weight: var(--display-weight); font-size: clamp(1.6rem, 4vw, 2.4rem); letter-spacing: var(--display-track); line-height: 1.15; text-wrap: balance; }
+.motto p::after { content: ""; display: block; width: 56px; height: 4px; border-radius: 2px; background: var(--amber); margin: 20px auto 0; }
+.step { border-top: 3px solid var(--accent); }
+.step .num { font-family: var(--display); font-weight: var(--display-weight); color: var(--accent); font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.step .free { justify-self: start; font-size: 0.75rem; font-weight: 600; color: var(--accent-strong); background: var(--soft); padding: 2px 8px; border-radius: 999px; }
+.commit-list { border: 1px solid var(--line); border-radius: 14px; padding: 4px 24px; }
+.commit { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; padding: 24px 0; border-top: 1px solid var(--line); }
+.commit:first-child { border-top: 0; }
+.commit .icon { grid-row: span 2; }
+@media (min-width: 900px) { .commit-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; } .commit:nth-child(2) { border-top: 0; } }
+
+/* Casos */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.filters button { font: 600 0.9rem/1 var(--body); min-height: 40px; padding: 0 16px; border-radius: 8px; border: 1px solid #C9D8D4; background: var(--paper); color: var(--ink); cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+.case[hidden] { display: none; }
+.case-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; }
+.demo-badge { font-size: 0.74rem; font-weight: 600; color: var(--muted); border: 1px solid #C9D8D4; padding: 2px 8px; border-radius: 6px; }
+.case-sector { font-size: 0.85rem; color: var(--muted); margin-top: -6px; }
+.case dl { margin: 6px 0 0; display: grid; gap: 12px; }
+.case dt { font-size: 0.74rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.case dd { margin: 2px 0 0; font-size: 0.95rem; }
+.case-tags { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 6px; }
+.case-tags span { font-size: 0.74rem; font-weight: 600; color: var(--muted); background: #F1F4F3; border-radius: 6px; padding: 2px 8px; }
+
+/* Sobre, FAQ, contacto */
+.founder { display: grid; grid-template-columns: 72px 1fr; gap: 16px; align-items: start; }
+.avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--soft); border: 1.5px dashed #9DB5AF; display: grid; place-items: center; font-family: var(--display); font-weight: 700; color: var(--accent); }
+blockquote { margin: 28px 0 0; padding: 4px 0 4px 24px; border-left: 3px solid var(--accent); font-family: var(--display); font-weight: 600; font-size: clamp(1.25rem, 2.6vw, 1.6rem); line-height: 1.35; letter-spacing: -0.01em; max-width: 46ch; }
+details { border-bottom: 1px solid var(--line); padding: 16px 0; }
+details:first-of-type { border-top: 1px solid var(--line); }
+summary { font-weight: 600; cursor: pointer; }
+details p { margin-top: 10px; color: var(--muted); max-width: 62ch; }
+.field { display: grid; gap: 6px; }
+.field label { font-weight: 600; font-size: 0.95rem; }
+.field input { font: inherit; min-height: 48px; border: 1px solid #9DB5AF; border-radius: 8px; padding: 0 14px; color: var(--ink); background: var(--paper); }
+.field input:focus { outline: 3px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+
+/* Identidade */
+.brand-zone { background: var(--soft); }
+.logo-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.tile { border: 1px solid var(--line); border-radius: 14px; background: var(--paper); margin: 0; display: grid; grid-template-rows: 1fr auto; overflow: hidden; }
+.tile .stage { display: grid; place-items: center; padding: 40px 24px; min-height: 200px; }
+.tile figcaption { font-size: 0.85rem; color: var(--muted); padding: 12px 16px; border-top: 1px solid var(--line); background: var(--paper); }
+.tile.dark .stage { background: var(--ink); }
+.tile .stage .lockup { font-size: 2.6rem; }
+.tile .stage .lockup.v { font-size: 2.1rem; }
+.app-icon { display: grid; place-items: center; background: var(--accent); --logo-f: #FFFFFF; }
+.app-icon svg { width: 66%; height: 60%; }
+.icons-row { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; justify-content: center; }
+.fav-row { display: flex; align-items: end; gap: 16px; }
+.ref-compare { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-top: 16px; }
+.ref-compare img { width: 100%; height: auto; display: block; }
+.ref-compare .stage { padding: 24px; }
+.ref-svg { display: grid; justify-items: center; gap: 2px; }
+.ref-svg svg { width: 56%; }
+.ref-svg span { font-family: var(--f-wordmark); font-weight: 800; font-size: clamp(2.4rem, 6vw, 3.4rem); letter-spacing: -0.015em; line-height: 1; color: var(--ink); }
+.wm-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.wm { border: 1px solid var(--line); border-radius: 14px; background: var(--paper); padding: 24px; display: grid; gap: 12px; align-content: start; }
+.wm.pick { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.wm .sample { font-size: 3rem; line-height: 1; color: var(--ink); letter-spacing: -0.015em; }
+.wm .badge { justify-self: start; font-size: 0.75rem; font-weight: 600; color: #fff; background: var(--accent); padding: 2px 8px; border-radius: 6px; }
+.wm ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.9rem; }
+.swatches { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.swatch { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 0.85rem; background: var(--paper); }
+.swatch .chip { height: 76px; display: flex; align-items: end; padding: 10px 12px; font-weight: 600; }
+.swatch .meta { padding: 10px 12px; display: grid; gap: 2px; }
+.swatch .meta span { color: var(--muted); }
+.amber-rule { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 16px; }
+.rule { border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--paper); display: grid; gap: 12px; align-content: start; }
+.rule .demo-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.rule .verdict { font-weight: 600; font-size: 0.9rem; }
+.rule.yes .verdict { color: #0B5C55; }
+.rule.no .verdict { color: #9F1239; }
+.pill-amber { background: var(--amber); color: var(--ink); font-weight: 600; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; }
+.pill-amber.bad { color: #fff; }
+footer { padding: 40px 0 56px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; }
+
+/* ===== v5: mais cor da marca ===== */
+.section { position: relative; overflow: hidden; }
+.section > .wrap { position: relative; z-index: 1; }
+.bg-soft { background: var(--soft); border-top: 0; }
+.bg-ink, .bg-dark, .bg-green { color: #fff; border-top: 0; }
+.bg-ink { background: var(--ink); }
+.bg-dark { background: var(--accent-strong); }
+.bg-green { background: var(--accent); }
+.bg-ink h2, .bg-ink h3, .bg-dark h2, .bg-dark h3, .bg-green h2, .bg-green h3 { color: #fff; }
+.bg-ink .note { color: #B8CCC7; }            /* 10,14 : 1 */
+.bg-dark .note { color: #CFE7E2; }           /* 5,18 : 1 sobre a marca de água */
+.bg-dark .label { color: var(--aqua); }      /* 4,54 : 1 sobre a marca de água */
+.bg-ink .label { color: var(--aqua); }       /* 11,5 : 1 */
+.bg-green .label, .bg-green .note { color: #fff; }  /* 4,88 : 1 sobre a marca de água */
+.wm-f { position: absolute; z-index: 0; right: -140px; top: 50%; transform: translateY(-50%); height: 135%; width: auto; aspect-ratio: 610 / 545; color: #fff; pointer-events: none; }
+.bg-dark .wm-f { opacity: 0.05; }
+.bg-green .wm-f { opacity: 0.06; }
+@media (max-width: 700px) { .wm-f { right: -45%; height: 90%; } }
+.bg-dark .card { background: #0C4E4A; border-color: rgba(255,255,255,.14); }
+.bg-dark .step { border-top-color: var(--aqua); }
+.bg-dark .step .num { color: var(--aqua); }  /* 6,44 : 1 */
+.bg-dark .step .free { background: var(--amber); color: var(--ink); }  /* 7,93 : 1 */
+.bg-soft .example { background: var(--soft); }
+
+/* Etiquetas das versões do hero */
+.variant-tag { background: #FEF3C7; color: #78350F; font: 700 0.8rem/1 var(--f-inter); letter-spacing: 0.06em; text-transform: uppercase; padding: 10px 20px; text-align: center; }
+.variant-tag span { font-weight: 500; text-transform: none; letter-spacing: 0; }
+
+/* Hero A: fundo escuro, F verde-água */
+.hero-a { background: var(--ink); color: #fff; overflow: hidden; }
+.hero-a .site-nav a { color: #fff; }
+.hero-a .site-nav a:hover { color: var(--aqua); }
+.hero-a .menu-btn { background: transparent; color: #fff; border-color: #3A4D49; }
+.hero-a .hero h1 { color: #fff; }
+.hero-a .hero h1 em { color: var(--aqua); }   /* 11,5 : 1 */
+.hero-a .hero-lead { color: #B8CCC7; }          /* 10,1 : 1 */
+.hero-a .hero-trust { border-top-color: #2A3F3B; }
+.hero-a .hero-trust svg { color: var(--aqua); }
+.hero-a .btn-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.55); }
+.hero-a .btn-ghost:hover { border-color: var(--aqua); color: var(--aqua); }
+.hero-a .steps-strip span { color: #B8CCC7; }
+@keyframes step-dark { 0%, 24% { color: #fff; border-color: var(--aqua); } 25%, 100% { color: #B8CCC7; border-color: transparent; } }
+.hero-a .steps-strip span { animation-name: step-dark; }
+.phone-stage { position: relative; isolation: isolate; }
+.phone-stage .phone, .phone-stage .steps-strip { position: relative; z-index: 1; }
+.stage-f { position: absolute; z-index: 0; width: 132%; height: auto; aspect-ratio: 610 / 545; left: -24%; top: 4%; pointer-events: none; }
+.hero-a .stage-f { color: var(--aqua); }
+.hero-a .phone { box-shadow: 0 30px 60px -20px rgba(0,0,0,.6); }
+@media (prefers-reduced-motion: reduce) { .hero-a .steps-strip span:last-child { color: #fff; border-color: var(--aqua); } }
+
+/* Hero B: fundo claro, forma verde grande */
+.hero-b { background: var(--paper); overflow: hidden; }
+.hero-b .stage-f { color: var(--accent); }
+
+/* Banda da frase */
+.motto.bg-ink { border-top: 0; }
+.motto.bg-ink p { color: #fff; }
+
+/* Contacto em verde */
+.btn-light { background: #fff; color: var(--accent); }               /* 5,47 : 1 */
+.btn-light:hover { background: var(--soft); color: var(--accent-strong); }
+.btn-outline-light { background: transparent; color: #fff; border-color: #fff; }
+.btn-outline-light:hover { background: rgba(255,255,255,.1); }
+.contact-grid { display: grid; gap: 40px; align-items: start; }
+@media (min-width: 900px) { .contact-grid { grid-template-columns: 1fr 1fr; } }
+.contact-copy { display: grid; gap: 20px; }
+.contact-copy .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+.contact-lines { display: grid; gap: 6px; font-size: 0.95rem; }
+.form-card { background: #fff; color: var(--ink); border-radius: 14px; padding: 28px; display: grid; gap: 14px; box-shadow: 0 24px 48px -28px rgba(0,0,0,.45); }
+.form-card h3 { color: var(--ink) !important; }
+.field textarea { font: inherit; min-height: 96px; border: 1px solid #9DB5AF; border-radius: 8px; padding: 10px 14px; color: var(--ink); resize: vertical; }
+.field textarea:focus { outline: 3px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+.consent { display: flex; gap: 10px; align-items: start; font-size: 0.88rem; color: var(--muted); }
+.consent input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--accent); flex: none; }
+.faq-list { max-width: 760px; }
+
+/* Rodapé escuro */
+.site-footer { background: var(--ink); color: #A3B8B3; padding: 56px 0 32px; font-size: 0.92rem; }  /* 8,16 : 1 */
+.site-footer .cols { display: grid; gap: 32px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.site-footer h4 { margin: 0 0 10px; color: #fff; font: 600 0.85rem/1.3 var(--f-inter); letter-spacing: 0.06em; text-transform: uppercase; }
+.site-footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.site-footer a { color: #fff; text-decoration: none; }
+.site-footer a:hover { color: var(--aqua); }
+.site-footer .lockup { font-size: 1.6rem; }
+.site-footer .legal { margin-top: 40px; padding-top: 20px; border-top: 1px solid #2A3F3B; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+.contrast-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 16px; background: #fff; border-radius: 12px; overflow: hidden; }
+.contrast-table th, .contrast-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.contrast-table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.contrast-table td.num { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.contrast-table .chipcell { display: inline-block; padding: 3px 10px; border-radius: 6px; font-weight: 600; }
+.table-scroll { overflow-x: auto; }
+
+/* ===== v6: secções com mais vida ===== */
+/* Aparecimento ao fazer scroll: só esconde se o JS estiver ativo e o movimento permitido */
+.reveal { transition: opacity .6s ease, transform .5s ease; transition-delay: calc(var(--d, 0) * 90ms); }
+.js .reveal:not(.in) { opacity: 0; transform: translateY(18px); }
+/* Cartões que reagem ao toque */
+.lift { transition: opacity .6s ease, transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.lift:hover { transform: translateY(-3px); box-shadow: 0 16px 32px -20px rgba(15,31,28,.35); border-color: #C9D8D4; }
+.lift:active { transform: translateY(-1px) scale(.995); }
+.bg-dark .lift:hover { box-shadow: 0 16px 32px -18px rgba(0,0,0,.5); border-color: rgba(255,255,255,.28); }
+
+/* Problemas: antes → depois */
+.ba { display: flex; align-items: center; gap: 10px; height: 52px; margin-bottom: 6px; }
+.ba-before { display: flex; }
+.pi { width: 42px; height: 42px; border: 1.5px solid #C9D8D4; border-radius: 10px; background: #fff; color: var(--muted); display: grid; place-items: center; opacity: .75; transition: opacity .5s ease .1s, color .5s ease .1s, border-color .5s ease .1s, transform .5s ease .1s; }
+.pi + .pi { margin-left: -12px; }
+.pi svg { width: 22px; height: 22px; }
+.ba-line { flex: 1; height: 14px; min-width: 30px; }
+.ba-line path { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 0; transition: stroke-dashoffset .7s ease .45s; }
+.ba-after { width: 42px; height: 42px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; flex: none; transition: transform .45s cubic-bezier(.2,.9,.3,1.3) 1s, opacity .3s ease 1s; }
+.ba-after svg { width: 22px; height: 22px; }
+.js .reveal:not(.in) .pi { opacity: 1; color: var(--ink); border-color: var(--ink); transform: none; }
+.js .reveal:not(.in) .ba-line path { stroke-dashoffset: 1; }
+.js .reveal:not(.in) .ba-after { transform: scale(.3); opacity: 0; }
+.reveal.in .pi { transform: translateX(-2px); }
+
+/* O que fazemos: mini pré-visualizações */
+.svc { overflow: hidden; }
+.mini { height: 172px; border-radius: 10px; background: var(--soft); margin: -4px -4px 8px; padding: 14px; overflow: hidden; position: relative; font-size: 0.72rem; line-height: 1.35; color: var(--ink); }
+.mini > * { transition: transform .35s ease; }
+.svc:hover .mini > *, .svc:focus-within .mini > * { transform: translateY(-4px); }
+.browser { background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; box-shadow: 0 10px 24px -18px rgba(15,31,28,.4); }
+.browser-bar { display: flex; align-items: center; gap: 4px; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.browser-bar i { width: 6px; height: 6px; border-radius: 50%; background: #C9D8D4; }
+.browser-bar b { flex: 1; height: 8px; border-radius: 4px; background: #EEF3F2; margin-left: 6px; }
+.browser-body { padding: 10px; display: grid; gap: 7px; }
+.browser-body .nm { font-family: var(--display); font-weight: 700; font-size: 0.8rem; }
+.mshapes { display: flex; gap: 4px; }
+.mshapes i { height: 26px; flex: 1; border-radius: 5px; background: #CFE6E0; }
+.mshapes i:nth-child(2) { background: #A9D3CA; flex: 1.4; }
+.mbtn { justify-self: start; background: var(--accent); color: #fff; border-radius: 5px; padding: 4px 10px; font-weight: 600; }
+.mini-phone { width: 128px; margin: 0 auto; background: var(--ink); border-radius: 20px; padding: 6px; box-shadow: 0 12px 24px -16px rgba(15,31,28,.5); }
+.mini-phone .scr { background: #fff; border-radius: 15px; padding: 12px 8px 30px; display: grid; gap: 6px; }
+.mini-phone .nm { font-family: var(--display); font-weight: 700; font-size: 0.78rem; }
+.cls { border: 1px solid var(--line); border-radius: 7px; padding: 5px 6px; display: grid; gap: 2px; }
+.cls span { color: var(--muted); }
+.cls em { font-style: normal; justify-self: start; background: var(--accent); color: #fff; border-radius: 4px; padding: 1px 6px; font-weight: 600; }
+.cls em.done { background: var(--soft); color: var(--accent-strong); }
+.mtiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.mtiles div { background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; display: grid; }
+.mtiles b { font-family: var(--display); font-size: 1.1rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.mtiles span { color: var(--muted); }
+.mbars { display: flex; align-items: end; gap: 4px; height: 48px; margin-top: 8px; background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; }
+.mbars i { flex: 1; background: #CFE6E0; border-radius: 2px 2px 0 0; }
+.mbars i:last-child { background: var(--accent); }
+.mnotes { display: grid; gap: 6px; }
+.mnote { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; display: grid; grid-template-columns: 1fr auto; gap: 0 8px; align-items: center; box-shadow: 0 8px 16px -14px rgba(15,31,28,.4); }
+.mnote span { color: var(--muted); }
+.mnote .ok-amber { grid-row: span 2; grid-column: 2; grid-row-start: 1; width: 20px; height: 20px; }
+.mnote .ok-amber svg { width: 12px; height: 12px; }
+.mflow { display: flex; align-items: center; gap: 4px; margin-bottom: 8px; }
+.mflow span { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; font-weight: 600; white-space: nowrap; }
+.mflow i { flex: 1; height: 2px; background: var(--accent); min-width: 8px; }
+.mcal { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; display: grid; gap: 4px; }
+.mcal .hd { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; color: var(--muted); text-align: center; }
+.mcal .gr { display: grid; grid-template-columns: repeat(5, 1fr); grid-auto-rows: 14px; gap: 4px; }
+.mcal .gr i { border-radius: 3px; background: #F1F4F3; }
+.mcal .gr i.b { background: #A9D3CA; }
+.mcal .gr i.n { background: var(--accent); }
+.mstatus { display: grid; gap: 6px; }
+.mstatus div { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.dot-on { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #0B5C55; }
+.dot-on::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px #CFE6E0; }
+.mstatus .ok-amber { width: 20px; height: 20px; }
+.mstatus .ok-amber svg { width: 12px; height: 12px; }
+
+/* Como trabalhamos: linha de fluxo */
+.flow { position: relative; --p: 1; }
+.flow-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: repeat(4, 1fr) 96px; position: relative; z-index: 1; }
+.flow-track { position: absolute; left: 22px; right: 74px; top: 21px; height: 2px; background: rgba(255,255,255,.22); z-index: 0; }
+.flow-fill { position: absolute; inset: 0; background: var(--aqua); transform-origin: left center; transform: scaleX(var(--p)); }
+.fstep { display: grid; gap: 18px; align-content: start; }
+.node { width: 44px; height: 44px; border-radius: 50%; background: var(--accent-strong); border: 2px solid rgba(255,255,255,.4); color: #fff; font-family: var(--display); font-weight: 700; font-size: 0.95rem; display: grid; place-items: center; transition: background-color .3s ease, border-color .3s ease, color .3s ease; }
+.fstep.lit .node { background: var(--aqua); border-color: var(--aqua); color: var(--ink); }  /* 11,5 : 1 */
+.fstep .card h3 { margin-top: 2px; }
+.fend { display: grid; justify-items: center; align-content: start; gap: 8px; text-align: center; }
+.end-check { width: 44px; height: 44px; border-radius: 50%; background: var(--amber); display: grid; place-items: center; transform: scale(.4); opacity: .35; transition: transform .45s cubic-bezier(.2,.9,.3,1.3), opacity .3s ease; }
+.end-check svg { width: 24px; height: 24px; color: #fff; }
+.fend span { font-weight: 600; font-size: 0.85rem; color: #fff; }
+.flow.done .end-check { transform: scale(1); opacity: 1; }
+@media (max-width: 899px) {
+  .flow-steps { grid-template-columns: 1fr; gap: 20px; }
+  .fstep { grid-template-columns: 44px 1fr; gap: 16px; }
+  .fend { grid-template-columns: 44px 1fr; justify-items: start; align-items: center; text-align: left; gap: 16px; }
+  .flow-track { left: 21px; right: auto; top: 22px; bottom: 22px; width: 2px; height: auto; }
+  .flow-fill { transform-origin: center top; transform: scaleY(var(--p)); }
+}
+
+/* Compromissos */
+.commit-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.commit-card { border: 1px solid var(--line); border-radius: 14px; padding: 28px; display: grid; gap: 12px; align-content: start; background: #fff; position: relative; overflow: hidden; }
+.commit-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--accent); }
+.c-icon { width: 60px; height: 60px; border-radius: 16px; background: var(--accent); color: #fff; display: grid; place-items: center; box-shadow: 0 10px 20px -12px rgba(15,118,110,.7); }
+.c-icon svg { width: 30px; height: 30px; }
+.c-practice { font-size: 0.88rem; border-top: 1px solid var(--line); padding-top: 12px; color: var(--ink); }
+.c-practice b { color: var(--accent-strong); }
+
+/* Exemplos: mockups grandes */
+.case { padding: 0; overflow: hidden; gap: 0; }
+.case .case-body { padding: 22px 24px 24px; display: grid; gap: 10px; }
+.device-stage { height: 270px; background: linear-gradient(160deg, #E3F2EE, #F0FAF7 60%); position: relative; overflow: hidden; display: grid; justify-items: center; border-bottom: 1px solid var(--line); }
+.device-stage .wm-mini { position: absolute; width: 70%; right: -18%; bottom: -30%; color: var(--accent); opacity: .07; aspect-ratio: 610/545; height: auto; }
+.m-phone { position: relative; z-index: 1; width: 176px; margin-top: 28px; background: var(--ink); border-radius: 28px; padding: 8px; height: 320px; box-shadow: 0 20px 40px -24px rgba(15,31,28,.55); transition: transform .4s ease; }
+.m-phone .scr { background: #fff; border-radius: 21px; height: 100%; overflow: hidden; }
+.m-laptop { position: relative; z-index: 1; width: 86%; max-width: 420px; margin-top: 34px; transition: transform .4s ease; }
+.m-laptop .lid { background: var(--ink); border-radius: 12px 12px 0 0; padding: 8px 8px 0; }
+.m-laptop .scr { background: #fff; border-radius: 6px 6px 0 0; height: 200px; overflow: hidden; }
+.m-laptop .base { height: 10px; background: #9DB5AF; border-radius: 0 0 10px 10px; margin: 0 -5%; }
+.scr-in { padding: 14px 12px; display: grid; gap: 8px; font-size: 0.72rem; line-height: 1.35; transition: transform .5s ease; }
+.scr-in .nm { font-family: var(--display); font-weight: 700; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+.scr-in .nm small { font-family: var(--body); font-weight: 500; color: var(--muted); font-size: 0.68rem; }
+.mslots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; font-variant-numeric: tabular-nums; }
+.mslots span { text-align: center; padding: 5px 0; border-radius: 6px; border: 1px solid var(--line); font-weight: 600; }
+.mslots .busy { background: #F1F4F3; color: var(--muted); text-decoration: line-through; border-color: transparent; font-weight: 500; }
+.mslots .pick { transition: background-color .3s ease .15s, color .3s ease .15s; }
+.case:hover .mslots .pick, .case:focus-within .mslots .pick, .case.is-on .mslots .pick { background: var(--accent); color: #fff; border-color: var(--accent); }
+.mtable { display: grid; gap: 4px; }
+.mtable div { display: grid; grid-template-columns: 1.4fr 1fr auto; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.mtable .h { color: var(--muted); font-weight: 600; border-bottom-color: #C9D8D4; }
+.lap-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; }
+.m-toast { position: absolute; z-index: 2; left: 50%; bottom: 16px; transform: translate(-50%, 12px); opacity: 0; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; box-shadow: 0 14px 28px -16px rgba(15,31,28,.45); transition: opacity .3s ease, transform .35s ease; }
+.m-toast .ok-amber { width: 20px; height: 20px; }
+.m-toast .ok-amber svg { width: 12px; height: 12px; }
+.case:hover .m-phone, .case:focus-within .m-phone, .case.is-on .m-phone,
+.case:hover .m-laptop, .case:focus-within .m-laptop, .case.is-on .m-laptop { transform: translateY(-8px); }
+.case:hover .scr-in, .case:focus-within .scr-in, .case.is-on .scr-in { transform: translateY(-10px); }
+.case:hover .m-toast, .case:focus-within .m-toast, .case.is-on .m-toast { opacity: 1; transform: translate(-50%, 0); }
+.case-link { justify-self: start; font-weight: 600; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
+.case-link svg { width: 16px; height: 16px; }
+.case-hint { font-size: 0.78rem; color: var(--muted); }
+
+/* Sobre nós com o F em marca de água */
+#sobre .wm-f { color: var(--accent); opacity: .06; right: -120px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .lift, .pi, .ba-line path, .ba-after, .node, .end-check, .mini > *, .m-phone, .m-laptop, .scr-in, .m-toast, .mslots .pick { transition: none !important; }
+  .lift:hover, .lift:active, .svc:hover .mini > *, .case:hover .m-phone, .case:hover .m-laptop, .case:hover .scr-in,
+  .case:focus-within .m-phone, .case:focus-within .m-laptop, .case:focus-within .scr-in, .case.is-on .m-phone, .case.is-on .m-laptop, .case.is-on .scr-in { transform: none; }
+  .m-toast { transform: translate(-50%, 0); }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- Símbolo FlowOps: F em duas faixas inclinadas + círculo âmbar com visto -->
+  <symbol id="fmark" viewBox="345 285 610 545">
+    <path style="fill: var(--logo-f)" d="M590 297 H916 Q946 297 937 326 L928 360 C917 402 886 428 848 428 H585 C500 428 440 470 401 540 L437 410 C455 345 510 297 590 297 Z"/>
+    <path style="fill: var(--logo-f)" d="M392 655 C425 540 495 484 585 484 H812 Q840 484 831 512 L822 545 C812 580 790 603 758 603 H612 C585 603 566 617 558 645 L519 768 C513 788 500 797 480 797 H382 Q352 797 360 768 Z"/>
+    <circle cx="683" cy="730" r="92" style="fill: var(--logo-circle)"/>
+    <path d="M640 732 L671 762 L727 704" fill="none" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--logo-check)"/>
+  </symbol>
+  <!-- Só o F, para usar como elemento gráfico (cor via currentColor) -->
+  <symbol id="fonly" viewBox="345 285 610 545">
+    <path fill="currentColor" d="M590 297 H916 Q946 297 937 326 L928 360 C917 402 886 428 848 428 H585 C500 428 440 470 401 540 L437 410 C455 345 510 297 590 297 Z"/>
+    <path fill="currentColor" d="M392 655 C425 540 495 484 585 484 H812 Q840 484 831 512 L822 545 C812 580 790 603 758 603 H612 C585 603 566 617 558 645 L519 768 C513 788 500 797 480 797 H382 Q352 797 360 768 Z"/>
+  </symbol>
+  <symbol id="wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></symbol>
+  <symbol id="ok" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<div class="review-bar">
+  <div class="wrap">
+    <span><strong>Pré-visualização · v6</strong> · Secções com mais vida · <a href="#identidade">Ver o logótipo</a></span>
+    <div class="font-switch" role="group" aria-label="Fonte dos títulos em toda a página">
+      <span>Títulos em:</span>
+      <button type="button" data-font="bricolage" aria-pressed="true">Bricolage (brand board)</button>
+      <button type="button" data-font="manrope" aria-pressed="false">Manrope</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hero · versão A -->
+<div class="variant-tag">Hero · versão A <span>· fundo escuro com o F em verde-água</span></div>
+<div class="hero-a">
+<div class="wrap">
+  <header class="site-header on-dark">
+    <a class="lockup" href="#topo" id="topo" aria-label="FlowOps, início"><svg aria-hidden="true"><use href="#fmark"/></svg><span>FlowOps</span></a>
+    <nav class="site-nav" aria-label="Principal">
+      <a href="#metodo">Como funciona</a><a href="#casos">Exemplos</a><a href="#sobre">Sobre nós</a><a href="#contacto">Contacto</a>
+    </nav>
+    <a class="btn btn-primary" href="#contacto">Falar connosco</a>
+    <button class="menu-btn" type="button" aria-label="Abrir menu"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </header>
+
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <h1 id="hero-title">Identificamos o que está a travar o seu negócio e desenvolvemos <em>a solução certa.</em></h1>
+      <p class="hero-lead">Software, websites e apps à medida, para eliminar processos manuais e informação espalhada. Primeiro percebemos o problema. Depois propomos a solução, com preço e prazo acordados por escrito.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#contacto"><svg aria-hidden="true"><use href="#wa"/></svg>Falar no WhatsApp</a>
+        <a class="btn btn-ghost" href="#contacto">Marcar uma conversa</a>
+      </div>
+      <div class="hero-trust">
+        <span><svg aria-hidden="true"><use href="#ok"/></svg>Diagnóstico sem custo</span>
+        <span><svg aria-hidden="true"><use href="#ok"/></svg>Preço e prazo por escrito</span>
+        <span><svg aria-hidden="true"><use href="#ok"/></svg>Equipa em Lisboa</span>
+      </div>
+    </div>
+
+    <div class="phone-stage" id="stage-a">
+      <svg class="stage-f" aria-hidden="true"><use href="#fonly"/></svg>
+      <div class="phone" role="img" aria-label="Exemplos de soluções: o website de uma padaria, uma marcação confirmada numa clínica, o painel de gestão de uma oficina e tarefas feitas automaticamente, como lembretes e faturas enviadas.">
+        <div class="screen" aria-hidden="true">
+          <div class="scene s1">
+            <div class="scr-top"><b>Padaria Lumen</b><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+            <div class="site-hero">
+              <div class="shapes"><i></i><i></i><i></i></div>
+              <b>Encomende hoje, levante amanhã a partir das 7h.</b>
+              <span class="mini-btn">Fazer encomenda</span>
+            </div>
+            <div class="menu-list">
+              <div>Pão de centeio<span>2,40 €</span></div>
+              <div>Broa de milho<span>1,90 €</span></div>
+              <div>Croissant<span>1,30 €</span></div>
+            </div>
+          </div>
+          <div class="scene s2">
+            <div class="scr-top"><b>Clínica Vértice</b><small>Fisioterapia</small></div>
+            <div class="service"><div><b>Sessão de fisioterapia</b><small>50 min</small></div><span class="tick"><svg><use href="#ok"/></svg></span></div>
+            <div class="day">Quinta-feira, 12 de novembro</div>
+            <div class="slots">
+              <span class="slot busy">09:00</span><span class="slot">10:00</span><span class="slot busy">11:00</span>
+              <span class="slot picked">14:00</span><span class="slot busy">15:00</span><span class="slot">16:00</span>
+            </div>
+            <div class="confirmed"><span class="ok-amber"><svg><use href="#ok"/></svg></span>Marcação confirmada</div>
+          </div>
+          <div class="scene s3">
+            <div class="scr-top"><b>Oficina Nortecar</b><small>Hoje</small></div>
+            <div class="tiles">
+              <div><b>7</b><span>Reparações em curso</span></div>
+              <div><b>3</b><span>Prontas a entregar</span></div>
+            </div>
+            <div class="bars"><i style="height:40%"></i><i style="height:65%"></i><i style="height:50%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:90%"></i></div>
+            <div class="bars-legend"><span>seg</span><span>dom</span></div>
+            <div class="rows">
+              <div>Utilitário · R. Silva<span class="pill ok">Pronto</span></div>
+              <div>Ligeiro · M. Lopes<span class="pill wip">Em curso</span></div>
+              <div>Ligeiro · J. Pinto<span class="pill wip">Em curso</span></div>
+            </div>
+          </div>
+          <div class="scene s4">
+            <div class="scr-top"><b>Automatizações</b><small>Hoje</small></div>
+            <div class="auto-list">
+              <div class="auto-item"><b>Lembrete enviado</b><span>Sessão amanhã às 14:00</span><span class="ok-amber"><svg><use href="#ok"/></svg></span></div>
+              <div class="auto-item"><b>Fatura enviada</b><span>Reparação concluída · por email</span><span class="ok-amber"><svg><use href="#ok"/></svg></span></div>
+              <div class="auto-item"><b>Encomenda pronta</b><span>Cliente avisado por SMS</span><span class="ok-amber"><svg><use href="#ok"/></svg></span></div>
+              <div class="auto-item"><b>Relatório semanal</b><span>Enviado para a gerência</span><span class="ok-amber"><svg><use href="#ok"/></svg></span></div>
+            </div>
+            <p class="auto-foot">O trabalho manual passa a fazer-se sozinho.</p>
+          </div>
+        </div>
+      </div>
+      <div class="steps-strip" aria-hidden="true"><span>Website</span><span>Marcações</span><span>Gestão</span><span>Automatização</span></div>
+    </div>
+  </section>
+</div>
+</div>
+
+<!-- Hero · versão B -->
+<div class="variant-tag">Hero · versão B <span>· fundo claro com uma grande forma verde atrás do telemóvel</span></div>
+<div class="hero-b">
+<div class="wrap">
+  <header class="site-header">
+    <a class="lockup" href="#topo" aria-label="FlowOps, início"><svg aria-hidden="true"><use href="#fmark"/></svg><span>FlowOps</span></a>
+    <nav class="site-nav" aria-label="Principal (versão B)">
+      <a href="#metodo">Como funciona</a><a href="#casos">Exemplos</a><a href="#sobre">Sobre nós</a><a href="#contacto">Contacto</a>
+    </nav>
+    <a class="btn btn-primary" href="#contacto">Falar connosco</a>
+    <button class="menu-btn" type="button" aria-label="Abrir menu"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </header>
+  <section class="hero" aria-labelledby="hero-b-title">
+    <div class="hero-copy">
+      <h1 id="hero-b-title">Identificamos o que está a travar o seu negócio e desenvolvemos <em>a solução certa.</em></h1>
+      <p class="hero-lead">Software, websites e apps à medida, para eliminar processos manuais e informação espalhada. Primeiro percebemos o problema. Depois propomos a solução, com preço e prazo acordados por escrito.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#contacto"><svg aria-hidden="true"><use href="#wa"/></svg>Falar no WhatsApp</a>
+        <a class="btn btn-ghost" href="#contacto">Marcar uma conversa</a>
+      </div>
+      <div class="hero-trust">
+        <span><svg aria-hidden="true"><use href="#ok"/></svg>Diagnóstico sem custo</span>
+        <span><svg aria-hidden="true"><use href="#ok"/></svg>Preço e prazo por escrito</span>
+        <span><svg aria-hidden="true"><use href="#ok"/></svg>Equipa em Lisboa</span>
+      </div>
+    </div>
+    <div class="phone-stage" id="stage-b">
+      <svg class="stage-f" aria-hidden="true"><use href="#fonly"/></svg>
+    </div>
+  </section>
+</div>
+</div>
+<div class="variant-tag">Resto da página <span>· igual nas duas versões</span></div>
+
+<!-- Problemas -->
+<section class="section" aria-labelledby="prob-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="label">Problemas que resolvemos</span>
+      <h2 id="prob-title">O que costuma travar um negócio</h2>
+    </div>
+    <div class="grid-4">
+      <article class="card problem reveal lift" style="--d:0">
+        <div class="ba" aria-hidden="true">
+          <div class="ba-before">
+            <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M9.5 12h6M9.5 15.5h6"/></svg></span>
+            <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M9.5 12h6M9.5 15.5h6"/></svg></span>
+            <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>
+          </div>
+          <svg class="ba-line" viewBox="0 0 60 14" preserveAspectRatio="none"><path pathLength="1" d="M2 7 C 18 1, 36 13, 58 7"/></svg>
+          <span class="ba-after"><svg><use href="#ok"/></svg></span>
+        </div>
+        <p class="pain">Tarefas manuais e repetitivas que ocupam horas todas as semanas.</p>
+        <p class="fix"><svg aria-hidden="true"><use href="#arrow"/></svg>Automatizamos o que se repete.</p>
+      </article>
+      <article class="card problem reveal lift" style="--d:1">
+        <div class="ba" aria-hidden="true">
+          <div class="ba-before">
+            <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M9.5 12h6M9.5 15.5h6"/></svg></span>
+            <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16"/></svg></span>
+            <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg></span>
+          </div>
+          <svg class="ba-line" viewBox="0 0 60 14" preserveAspectRatio="none"><path pathLength="1" d="M2 7 C 18 1, 36 13, 58 7"/></svg>
+          <span class="ba-after"><svg><use href="#ok"/></svg></span>
+        </div>
+        <p class="pain">Informação espalhada entre papel, Excel e WhatsApp.</p>
+        <p class="fix"><svg aria-hidden="true"><use href="#arrow"/></svg>Um único sistema, sempre atualizado.</p>
+      </article>
+      <article class="card problem reveal lift" style="--d:2">
+        <div class="ba" aria-hidden="true">
+          <div class="ba-before">
+            <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M10.5 13a1.8 1.8 0 1 1 2.4 1.7c-.6.2-.9.6-.9 1.1v.2M12 18h.01"/></svg></span>
+          </div>
+          <svg class="ba-line" viewBox="0 0 60 14" preserveAspectRatio="none"><path pathLength="1" d="M2 7 C 18 1, 36 13, 58 7"/></svg>
+          <span class="ba-after"><svg><use href="#ok"/></svg></span>
+        </div>
+        <p class="pain">Sem presença online, ou com um website que não ajuda.</p>
+        <p class="fix"><svg aria-hidden="true"><use href="#arrow"/></svg>Um website profissional, pensado para gerar contactos.</p>
+      </article>
+      <article class="card problem reveal lift" style="--d:3">
+        <div class="ba" aria-hidden="true">
+          <div class="ba-before">
+            <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg></span>
+            <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
+            <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h3l1.5 5-2 1.5a11 11 0 0 0 6 6l1.5-2 5 1.5v3a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2z"/></svg></span>
+          </div>
+          <svg class="ba-line" viewBox="0 0 60 14" preserveAspectRatio="none"><path pathLength="1" d="M2 7 C 18 1, 36 13, 58 7"/></svg>
+          <span class="ba-after"><svg><use href="#ok"/></svg></span>
+        </div>
+        <p class="pain">Clientes e pedidos que se perdem pelo caminho.</p>
+        <p class="fix"><svg aria-hidden="true"><use href="#arrow"/></svg>Cada pedido registado e acompanhado até ao fim.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Serviços -->
+<section class="section bg-soft" id="servicos" aria-labelledby="sol-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="label">O que fazemos</span>
+      <h2 id="sol-title">A ferramenta certa para cada problema</h2>
+      <p class="note">Escolhemos a solução depois de perceber o problema, e não o contrário.</p>
+    </div>
+    <div class="grid-3">
+      <article class="card svc reveal lift" style="--d:0">
+        <div class="mini" aria-hidden="true">
+          <div class="browser">
+            <div class="browser-bar"><i></i><i></i><i></i><b></b></div>
+            <div class="browser-body"><span class="nm">Padaria Lumen</span><div class="mshapes"><i></i><i></i><i></i></div><span>Encomende hoje, levante amanhã.</span><span class="mbtn">Fazer encomenda</span></div>
+          </div>
+        </div>
+        <h3>Websites</h3><p class="note">Sites profissionais e rápidos, pensados para serem encontrados e gerarem contactos.</p><p class="example"><b>Exemplo:</b> website de uma padaria com encomendas para o dia seguinte.</p>
+      </article>
+      <article class="card svc reveal lift" style="--d:1">
+        <div class="mini" aria-hidden="true">
+          <div class="mini-phone"><div class="scr">
+            <span class="nm">Ginásio Órbita</span>
+            <div class="cls"><b>Pilates · 18:00</b><span>Lugares disponíveis</span><em>Reservar</em></div>
+            <div class="cls"><b>Treino funcional · 19:00</b><em class="done">Reservado ✓</em></div>
+          </div></div>
+        </div>
+        <h3>Apps</h3><p class="note">Aplicações Android e iOS, a área em que temos formação específica.</p><p class="example"><b>Exemplo:</b> app para os sócios de um ginásio reservarem aulas.</p>
+      </article>
+      <article class="card svc reveal lift" style="--d:2">
+        <div class="mini" aria-hidden="true">
+          <div>
+            <div class="mtiles"><div><b>7</b><span>Reparações em curso</span></div><div><b>3</b><span>Prontas a entregar</span></div></div>
+            <div class="mbars"><i style="height:40%"></i><i style="height:65%"></i><i style="height:50%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:90%"></i></div>
+          </div>
+        </div>
+        <h3>Sistemas de gestão à medida</h3><p class="note">Clientes, pedidos, stock e agenda num só sistema, simples de usar.</p><p class="example"><b>Exemplo:</b> painel de reparações da Oficina Nortecar.</p>
+      </article>
+      <article class="card svc reveal lift" style="--d:0">
+        <div class="mini" aria-hidden="true">
+          <div class="mnotes">
+            <div class="mnote"><b>Lembrete enviado</b><span>Sessão amanhã às 14:00</span><span class="ok-amber"><svg><use href="#ok"/></svg></span></div>
+            <div class="mnote"><b>Fatura enviada</b><span>Reparação concluída</span><span class="ok-amber"><svg><use href="#ok"/></svg></span></div>
+            <div class="mnote"><b>Relatório semanal</b><span>Enviado para a gerência</span><span class="ok-amber"><svg><use href="#ok"/></svg></span></div>
+          </div>
+        </div>
+        <h3>Automatizações</h3><p class="note">Lembretes, emails, faturas e relatórios que se fazem sozinhos.</p><p class="example"><b>Exemplo:</b> aviso automático ao cliente quando a encomenda está pronta.</p>
+      </article>
+      <article class="card svc reveal lift" style="--d:1">
+        <div class="mini" aria-hidden="true">
+          <div>
+            <div class="mflow"><span>Website</span><i></i><span>Agenda</span><i></i><span>Lembrete</span></div>
+            <div class="mcal">
+              <div class="hd"><span>seg</span><span>ter</span><span>qua</span><span>qui</span><span>sex</span></div>
+              <div class="gr"><i class="b"></i><i></i><i class="b"></i><i class="b"></i><i></i><i></i><i class="b"></i><i></i><i class="n"></i><i class="b"></i><i class="b"></i><i class="b"></i><i></i><i></i><i class="b"></i></div>
+            </div>
+          </div>
+        </div>
+        <h3>Integrações</h3><p class="note">Ligamos as ferramentas que o negócio já utiliza.</p><p class="example"><b>Exemplo:</b> marcações do website da Clínica Vértice a entrar diretamente na agenda.</p>
+      </article>
+      <article class="card svc reveal lift" style="--d:2">
+        <div class="mini" aria-hidden="true">
+          <div class="mstatus">
+            <div><span>Website e sistema</span><span class="dot-on">Online</span></div>
+            <div><span>Atualização de segurança aplicada</span><span class="ok-amber"><svg><use href="#ok"/></svg></span></div>
+            <div><span>Pedido de suporte respondido</span><span class="ok-amber"><svg><use href="#ok"/></svg></span></div>
+          </div>
+        </div>
+        <h3>Manutenção e suporte</h3><p class="note">Alojamento, atualizações de segurança e melhorias contínuas.</p><p class="example"><b>Exemplo:</b> correções e pequenas alterações tratadas por nós.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Método -->
+<section class="section bg-dark" id="metodo" aria-labelledby="met-title">
+  <svg class="wm-f" aria-hidden="true"><use href="#fonly"/></svg>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="label">Como trabalhamos</span>
+      <h2 id="met-title">Um método claro, do diagnóstico ao suporte</h2>
+    </div>
+    <div class="flow" id="flow">
+      <div class="flow-track" aria-hidden="true"><div class="flow-fill"></div></div>
+      <ol class="flow-steps">
+        <li class="fstep lit"><span class="node" aria-hidden="true">01</span><div class="card lift"><h3>Diagnóstico</h3><span class="step free" style="border:0;justify-self:start;font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--amber);color:var(--ink)">Sem custo</span><p class="note">Uma reunião para perceber como o negócio funciona e o que o está a travar.</p></div></li>
+        <li class="fstep lit"><span class="node" aria-hidden="true">02</span><div class="card lift"><h3>Proposta por escrito</h3><p class="note">A solução, o preço e o prazo ficam definidos antes de começar. Só avançamos com o seu acordo.</p></div></li>
+        <li class="fstep lit"><span class="node" aria-hidden="true">03</span><div class="card lift"><h3>Desenvolvimento acompanhado</h3><p class="note">Trabalhamos por fases e o cliente vê o progresso desde o início.</p></div></li>
+        <li class="fstep lit"><span class="node" aria-hidden="true">04</span><div class="card lift"><h3>Entrega e suporte contínuo</h3><p class="note">Tratamos do alojamento, da manutenção e das melhorias depois da entrega.</p></div></li>
+        <li class="fend" aria-hidden="true"><span class="end-check"><svg><use href="#ok"/></svg></span><span>Problema resolvido</span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- Compromissos -->
+<section class="section" aria-labelledby="com-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="label">Os nossos compromissos</span>
+      <h2 id="com-title">O que pode esperar de nós</h2>
+    </div>
+    <div class="commit-grid">
+      <article class="commit-card reveal lift" style="--d:0">
+        <span class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h4"/></svg></span>
+        <h3>Preço e prazo acordados por escrito</h3>
+        <p class="note">Sem surpresas. Antes de começar, sabe o que vai receber, quanto custa e quando fica pronto.</p>
+        <p class="c-practice"><b>Na prática:</b> uma proposta escrita, aceite por si antes de qualquer trabalho.</p>
+      </article>
+      <article class="commit-card reveal lift" style="--d:1">
+        <span class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/></svg></span>
+        <h3>O sistema e os dados são do cliente</h3>
+        <p class="note">O que desenvolvemos pertence à sua empresa, tal como todos os dados.</p>
+        <p class="c-practice"><b>Na prática:</b> os dados são seus em qualquer momento. <span class="tag-confirm">A CONFIRMAR: entrega do código</span></p>
+      </article>
+      <article class="commit-card reveal lift" style="--d:2">
+        <span class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+        <h3>Segurança e RGPD desde o início</h3>
+        <p class="note">A proteção de dados faz parte do projeto desde o primeiro dia, e não é acrescentada no fim.</p>
+        <p class="c-practice"><b>Na prática:</b> acessos protegidos e dados usados apenas para o fim combinado.</p>
+      </article>
+      <article class="commit-card reveal lift" style="--d:3">
+        <span class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <h3>Suporte com tempo de resposta definido</h3>
+        <p class="note">Quando precisar de ajuda, sabe quando vai ter resposta.</p>
+        <p class="c-practice"><b>Na prática:</b> resposta em <span class="tag-confirm">A CONFIRMAR</span>, escrita na proposta.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Casos -->
+<section class="section bg-soft" id="casos" aria-labelledby="cas-title">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="label">Exemplos</span>
+      <h2 id="cas-title">Problema, solução e resultado esperado</h2>
+      <p class="note">Projetos de demonstração com empresas fictícias, para mostrar como abordamos cada tipo de problema.</p>
+    </div>
+    <div class="filters reveal" role="group" aria-label="Filtrar exemplos por tipo de projeto">
+      <button type="button" data-filter="todos" aria-pressed="true">Todos</button>
+      <button type="button" data-filter="website" aria-pressed="false">Website</button>
+      <button type="button" data-filter="app" aria-pressed="false">App</button>
+      <button type="button" data-filter="sistema" aria-pressed="false">Sistema</button>
+      <button type="button" data-filter="automatizacao" aria-pressed="false">Automatização</button>
+    </div>
+    <div class="grid-2" id="cases">
+      <article class="card case reveal lift" data-tags="sistema automatizacao" style="--d:0">
+        <div class="device-stage" aria-hidden="true">
+          <svg class="wm-mini"><use href="#fonly"/></svg>
+          <div class="m-phone"><div class="scr"><div class="scr-in">
+            <span class="nm">Clínica Vértice <small>Fisioterapia</small></span>
+            <div class="service" style="padding:7px 9px"><div><b>Sessão de fisioterapia</b><small>50 min</small></div></div>
+            <b>Quinta-feira, 12 nov.</b>
+            <div class="mslots"><span class="busy">09:00</span><span>10:00</span><span class="busy">11:00</span><span class="pick">14:00</span><span class="busy">15:00</span><span>16:00</span></div>
+            <span class="mbtn" style="justify-self:stretch;text-align:center">Confirmar marcação</span>
+          </div></div></div>
+          <div class="m-toast"><span class="ok-amber"><svg><use href="#ok"/></svg></span>Marcação confirmada · lembrete agendado</div>
+        </div>
+        <div class="case-body">
+          <div class="case-head"><h3>Clínica Vértice</h3><span class="demo-badge">Projeto de demonstração</span></div>
+          <p class="case-sector">Clínica de fisioterapia · sistema de marcações</p>
+          <dl>
+            <div><dt>Problema</dt><dd>Marcações só por telefone, durante o horário de atendimento, e faltas sem aviso.</dd></div>
+            <div><dt>Solução</dt><dd>Sistema de marcações online, com gestão da agenda e lembretes automáticos na véspera.</dd></div>
+            <div><dt>Resultado esperado</dt><dd>Agenda disponível a qualquer hora, menos chamadas e menos faltas sem aviso.</dd></div>
+          </dl>
+          <div class="case-tags"><span>Sistema</span><span>Automatização</span></div>
+          <a class="case-link" href="#casos">Ver demonstração<svg aria-hidden="true"><use href="#arrow"/></svg></a>
+        </div>
+      </article>
+      <article class="card case reveal lift" data-tags="website" style="--d:1">
+        <div class="device-stage" aria-hidden="true">
+          <svg class="wm-mini"><use href="#fonly"/></svg>
+          <div class="m-laptop"><div class="lid"><div class="scr"><div class="scr-in">
+            <span class="nm">Padaria Lumen <small>Produtos · Encomendas · Contactos</small></span>
+            <div class="lap-grid">
+              <div style="display:grid;gap:6px;align-content:start"><b style="font-family:var(--display);font-size:.95rem;line-height:1.2">Encomende hoje, levante amanhã a partir das 7h.</b><span class="mbtn">Fazer encomenda</span></div>
+              <div class="mshapes" style="align-self:start"><i style="height:64px"></i><i style="height:64px"></i></div>
+            </div>
+            <div class="mtable"><div class="h"><span>Produto</span><span>Preço</span><span></span></div><div><span>Pão de centeio</span><span>2,40 €</span><span class="mbtn" style="padding:1px 6px">+</span></div><div><span>Broa de milho</span><span>1,90 €</span><span class="mbtn" style="padding:1px 6px">+</span></div></div>
+          </div></div></div><div class="base"></div></div>
+          <div class="m-toast"><span class="ok-amber"><svg><use href="#ok"/></svg></span>Encomenda recebida · para amanhã</div>
+        </div>
+        <div class="case-body">
+          <div class="case-head"><h3>Padaria Lumen</h3><span class="demo-badge">Projeto de demonstração</span></div>
+          <p class="case-sector">Padaria e pastelaria · website</p>
+          <dl>
+            <div><dt>Problema</dt><dd>Sem website e com as encomendas recebidas por mensagem, difíceis de organizar.</dd></div>
+            <div><dt>Solução</dt><dd>Website com catálogo e encomendas para o dia seguinte, com uma lista de produção diária.</dd></div>
+            <div><dt>Resultado esperado</dt><dd>Presença online profissional, encomendas num só sítio e produção planeada com antecedência.</dd></div>
+          </dl>
+          <div class="case-tags"><span>Website</span></div>
+          <a class="case-link" href="#casos">Ver demonstração<svg aria-hidden="true"><use href="#arrow"/></svg></a>
+        </div>
+      </article>
+      <article class="card case reveal lift" data-tags="sistema automatizacao" style="--d:0">
+        <div class="device-stage" aria-hidden="true">
+          <svg class="wm-mini"><use href="#fonly"/></svg>
+          <div class="m-laptop"><div class="lid"><div class="scr"><div class="scr-in">
+            <span class="nm">Oficina Nortecar <small>Hoje</small></span>
+            <div class="mtiles"><div><b>7</b><span>Em curso</span></div><div><b>3</b><span>Prontas a entregar</span></div></div>
+            <div class="mtable">
+              <div class="h"><span>Viatura · cliente</span><span>Estado</span><span>Aviso</span></div>
+              <div><span>Utilitário · R. Silva</span><span class="pill ok">Pronto</span><span>Enviado</span></div>
+              <div><span>Ligeiro · M. Lopes</span><span class="pill wip">Em curso</span><span>–</span></div>
+            </div>
+          </div></div></div><div class="base"></div></div>
+          <div class="m-toast"><span class="ok-amber"><svg><use href="#ok"/></svg></span>Cliente avisado · fatura enviada</div>
+        </div>
+        <div class="case-body">
+          <div class="case-head"><h3>Oficina Nortecar</h3><span class="demo-badge">Projeto de demonstração</span></div>
+          <p class="case-sector">Oficina automóvel · painel de gestão</p>
+          <dl>
+            <div><dt>Problema</dt><dd>Registo das reparações em papel e clientes que ligam várias vezes para saber se a viatura está pronta.</dd></div>
+            <div><dt>Solução</dt><dd>Painel de gestão de reparações, com o estado de cada trabalho, aviso automático ao cliente e fatura enviada por email.</dd></div>
+            <div><dt>Resultado esperado</dt><dd>Menos chamadas, histórico completo de cada viatura e entregas mais organizadas.</dd></div>
+          </dl>
+          <div class="case-tags"><span>Sistema</span><span>Automatização</span></div>
+          <a class="case-link" href="#casos">Ver demonstração<svg aria-hidden="true"><use href="#arrow"/></svg></a>
+        </div>
+      </article>
+      <article class="card case reveal lift" data-tags="app" style="--d:1">
+        <div class="device-stage" aria-hidden="true">
+          <svg class="wm-mini"><use href="#fonly"/></svg>
+          <div class="m-phone"><div class="scr"><div class="scr-in">
+            <span class="nm">Ginásio Órbita <small>Aulas</small></span>
+            <b>Hoje</b>
+            <div class="cls"><b>Pilates · 18:00</b><span>Lugares disponíveis</span><em>Reservar</em></div>
+            <div class="cls"><b>Treino funcional · 19:00</b><em class="done">Reservado ✓</em></div>
+            <div class="cls"><b>Mobilidade · 20:00</b><span>Lotação completa</span></div>
+          </div></div></div>
+          <div class="m-toast"><span class="ok-amber"><svg><use href="#ok"/></svg></span>Lugar reservado · Pilates 18:00</div>
+        </div>
+        <div class="case-body">
+          <div class="case-head"><h3>Ginásio Órbita</h3><span class="demo-badge">Projeto de demonstração</span></div>
+          <p class="case-sector">Ginásio · app Android e iOS</p>
+          <dl>
+            <div><dt>Problema</dt><dd>Aulas sobrelotadas e reservas geridas em papel na receção.</dd></div>
+            <div><dt>Solução</dt><dd>App para os sócios consultarem os horários e reservarem lugar nas aulas.</dd></div>
+            <div><dt>Resultado esperado</dt><dd>Lotação controlada e menos trabalho administrativo na receção.</dd></div>
+          </dl>
+          <div class="case-tags"><span>App</span></div>
+          <a class="case-link" href="#casos">Ver demonstração<svg aria-hidden="true"><use href="#arrow"/></svg></a>
+        </div>
+      </article>
+    </div>
+    <p class="note" style="margin-top:16px"><span class="tag-confirm">A CONFIRMAR</span> Confirmar que não existe em Lisboa nenhuma empresa real com estes nomes. Os links "Ver demonstração" ficam ativos quando as demos estiverem publicadas.</p>
+  </div>
+</section>
+
+<div class="motto bg-ink"><div class="wrap"><p class="reveal">O trabalho manual passa a fazer-se sozinho.</p></div></div>
+
+<!-- Sobre nós -->
+<section class="section" id="sobre" aria-labelledby="sob-title">
+  <svg class="wm-f" aria-hidden="true"><use href="#fonly"/></svg>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="label">Sobre nós</span>
+      <h2 id="sob-title">Quem está do outro lado</h2>
+      <p class="note">Criámos a FlowOps para pôr a formação e a experiência que temos em desenvolvimento de software ao serviço dos negócios locais. Somos de Lisboa e falamos consigo pessoalmente.</p>
+    </div>
+    <div class="grid-2">
+      <div class="card founder reveal lift" style="--d:0"><span class="avatar" aria-hidden="true">LC</span><div style="display:grid;gap:6px"><h3>Lourenço Couto</h3><p class="note">Concluiu o CTeSP em Desenvolvimento para Dispositivos Móveis no ISTEC, em Lisboa, e frequenta o 2.º ano da Licenciatura em Engenharia Informática. Fez um estágio profissional de 6 meses na Unipartner, em desenvolvimento de software, em projetos reais.</p></div></div>
+      <div class="card founder reveal lift" style="--d:1"><span class="avatar" aria-hidden="true">PM</span><div style="display:grid;gap:6px"><h3>Pedro Marques</h3><p class="note">Concluiu o mesmo CTeSP no ISTEC e frequenta também o 2.º ano da Licenciatura em Engenharia Informática. Fez um estágio profissional de 6 meses na QUIC, em Lisboa, em desenvolvimento de software, em projetos reais.</p></div></div>
+    </div>
+    <blockquote class="reveal">“Somos de Lisboa e gostamos de resolver problemas. O seu tempo é para os seus clientes. A tecnologia fica connosco.”</blockquote>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section bg-soft" aria-labelledby="faq-title">
+  <div class="wrap">
+    <div class="section-head" style="margin-bottom:20px"><span class="label">Perguntas frequentes</span><h2 id="faq-title">Antes de falarmos</h2></div>
+    <div class="faq-list">
+      <details open><summary>Preciso de saber de informática?</summary><p>Não. Tratamos de toda a parte técnica e explicamos o funcionamento à sua equipa, sem termos técnicos.</p></details>
+      <details><summary>Que tipo de projetos fazem?</summary><p>Websites, apps, sistemas de gestão, automatizações e integrações entre ferramentas. A solução depende do problema que o negócio precisa de resolver.</p></details>
+      <details><summary>Quanto custa um projeto?</summary><p>Depende do que for preciso. Depois do diagnóstico, que é sem custo, enviamos uma proposta por escrito com o preço fechado. <span class="tag-confirm">A CONFIRMAR: valores de referência</span></p></details>
+      <details><summary>Quanto tempo demora?</summary><p>O prazo fica definido na proposta, antes de começarmos. <span class="tag-confirm">A CONFIRMAR: prazos típicos</span></p></details>
+      <details><summary>Quem trata da manutenção depois?</summary><p>Nós. Tratamos do alojamento, das atualizações e das melhorias, com um tempo de resposta definido.</p></details>
+      <details><summary>Os dados do meu negócio estão seguros?</summary><p>Sim. Aplicamos boas práticas de segurança e cumprimos o RGPD desde o início do projeto. Os dados pertencem sempre ao cliente.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- Contacto -->
+<section class="section bg-green" id="contacto" aria-labelledby="ct-title">
+  <svg class="wm-f" aria-hidden="true"><use href="#fonly"/></svg>
+  <div class="wrap contact-grid">
+    <div class="contact-copy">
+      <span class="label">Contacto</span>
+      <h2 id="ct-title">Conte-nos o que está a travar o seu negócio</h2>
+      <p class="note">O diagnóstico é sem custo e não obriga a avançar. Respondemos pessoalmente.</p>
+      <div class="btns">
+        <a class="btn btn-light" href="#contacto"><svg aria-hidden="true"><use href="#wa"/></svg>Falar no WhatsApp</a>
+        <a class="btn btn-outline-light" href="#contacto">Marcar uma conversa</a>
+      </div>
+      <div class="contact-lines">
+        <span>Email: <span class="tag-confirm">A CONFIRMAR</span></span>
+        <span>WhatsApp: <span class="tag-confirm">A CONFIRMAR</span></span>
+        <span>Lisboa, Portugal</span>
+      </div>
+    </div>
+    <form class="form-card" onsubmit="event.preventDefault()">
+      <h3>Envie-nos uma mensagem</h3>
+      <div class="field"><label for="f-nome">Nome</label><input id="f-nome" type="text" autocomplete="name"></div>
+      <div class="field"><label for="f-neg">Negócio</label><input id="f-neg" type="text" autocomplete="organization"></div>
+      <div class="field"><label for="f-tel">Telemóvel</label><input id="f-tel" type="tel" autocomplete="tel"></div>
+      <div class="field"><label for="f-msg">Mensagem</label><textarea id="f-msg"></textarea></div>
+      <label class="consent" for="f-rgpd"><input id="f-rgpd" type="checkbox">Aceito que a FlowOps use estes dados para responder ao meu pedido, conforme a Política de Privacidade.</label>
+      <button class="btn btn-primary" type="submit">Enviar mensagem</button>
+    </form>
+  </div>
+</section>
+
+<!-- Rodapé do site -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="cols">
+      <div style="display:grid;gap:12px;align-content:start">
+        <span class="lockup on-dark"><svg aria-hidden="true"><use href="#fmark"/></svg><span>FlowOps</span></span>
+        <p>Software, websites e apps à medida para negócios em Lisboa.</p>
+      </div>
+      <div><h4>Contactos</h4><ul><li>Email <span class="tag-confirm">A CONFIRMAR</span></li><li>WhatsApp <span class="tag-confirm">A CONFIRMAR</span></li><li>Lisboa, Portugal</li></ul></div>
+      <div><h4>Navegação</h4><ul><li><a href="#metodo">Como funciona</a></li><li><a href="#casos">Exemplos</a></li><li><a href="#sobre">Sobre nós</a></li><li><a href="#contacto">Contacto</a></li></ul></div>
+      <div><h4>Redes</h4><ul><li>Instagram <span class="tag-confirm">A CONFIRMAR</span></li><li>LinkedIn <span class="tag-confirm">A CONFIRMAR</span></li></ul></div>
+    </div>
+    <div class="legal"><span>© 2026 FlowOps</span><span><a href="#topo">Política de Privacidade</a> · <a href="#topo">Termos</a></span></div>
+  </div>
+</footer>
+<!-- Identidade -->
+<div class="variant-tag">Material de revisão <span>· identidade e contraste (não faz parte do site)</span></div>
+<div class="brand-zone" id="identidade">
+<section class="section" aria-labelledby="logo-title" style="border-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="label">Identidade · logótipo redesenhado em SVG</span>
+      <h2 id="logo-title">O F em duas faixas com o visto âmbar</h2>
+      <p class="note">Redesenhado em vetor a partir da referência aprovada, com as mesmas inclinações nas faixas, nas pontas e na haste, e cantos arredondados. O círculo âmbar fica encaixado no canto inferior direito, sem tocar no F.</p>
+    </div>
+
+    <div class="ref-compare">
+      <figure class="tile"><div class="stage"><img src="brand/logo-referencia.png" alt="Referência aprovada: logótipo FlowOps gerado por IA, em imagem raster" width="520" height="559"></div><figcaption>Referência aprovada · imagem raster</figcaption></figure>
+      <figure class="tile"><div class="stage"><div class="ref-svg"><svg aria-hidden="true"><use href="#fmark"/></svg><span>FlowOps</span></div></div><figcaption>Redesenho em SVG · wordmark em Outfit ExtraBold</figcaption></figure>
+    </div>
+
+    <h3 style="margin:48px 0 16px">Versões</h3>
+    <div class="logo-grid">
+      <figure class="tile"><div class="stage"><span class="lockup"><svg aria-hidden="true"><use href="#fmark"/></svg><span>FlowOps</span></span></div><figcaption>Horizontal · versão principal</figcaption></figure>
+      <figure class="tile"><div class="stage"><span class="lockup v"><svg aria-hidden="true"><use href="#fmark"/></svg><span>FlowOps</span></span></div><figcaption>Vertical</figcaption></figure>
+      <figure class="tile dark"><div class="stage on-dark"><span class="lockup"><svg aria-hidden="true"><use href="#fmark"/></svg><span>FlowOps</span></span></div><figcaption>Fundo escuro · F <span class="mono">#5EEAD4</span>, texto branco</figcaption></figure>
+      <figure class="tile">
+        <div class="stage">
+          <div class="icons-row">
+            <span class="app-icon" style="width:120px;height:120px;border-radius:28px"><svg aria-hidden="true"><use href="#fmark"/></svg></span>
+            <span class="app-icon" style="width:120px;height:120px;border-radius:50%"><svg aria-hidden="true" style="width:60%;height:55%"><use href="#fmark"/></svg></span>
+          </div>
+        </div>
+        <figcaption>Ícone de app e foto de perfil circular</figcaption>
+      </figure>
+      <figure class="tile">
+        <div class="stage">
+          <div class="fav-row" aria-hidden="true">
+            <span class="app-icon" style="width:16px;height:16px;border-radius:4px"><svg style="width:80%;height:74%"><use href="#fmark"/></svg></span>
+            <span class="app-icon" style="width:32px;height:32px;border-radius:7px"><svg style="width:76%;height:70%"><use href="#fmark"/></svg></span>
+            <span class="app-icon" style="width:64px;height:64px;border-radius:14px"><svg><use href="#fmark"/></svg></span>
+            <span class="app-icon" style="width:96px;height:96px;border-radius:22px"><svg><use href="#fmark"/></svg></span>
+          </div>
+        </div>
+        <figcaption>Favicon · 16, 32, 64 e 96 px (gerado em SVG e PNG 32/180/512)</figcaption>
+      </figure>
+      <figure class="tile">
+        <div class="stage" style="padding:28px">
+          <div style="display:grid;gap:18px;justify-items:start;width:100%">
+            <span class="lockup" style="font-size:1.1rem"><svg aria-hidden="true"><use href="#fmark"/></svg><span>FlowOps</span></span>
+            <span class="lockup" style="font-size:1.6rem"><svg aria-hidden="true"><use href="#fmark"/></svg><span>FlowOps</span></span>
+          </div>
+        </div>
+        <figcaption>Tamanhos pequenos · cabeçalho do site e assinatura de email</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="wm-title">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="label">Fonte do wordmark</span>
+      <h2 id="wm-title">A geométrica mais próxima da referência</h2>
+      <p class="note">Na versão final, o wordmark é convertido em formas vetoriais, por isso o site não precisa de carregar esta fonte.</p>
+    </div>
+    <div class="wm-grid">
+      <div class="wm pick">
+        <span class="badge">Escolhida</span>
+        <span class="sample" style="font-family:'Outfit';font-weight:800">FlowOps</span>
+        <p class="label">Outfit ExtraBold</p>
+        <ul><li>O e o são círculos quase perfeitos, como na referência.</li><li>O w tem vértices em bico e o s é compacto.</li><li>O F tem o braço do meio curto, igual ao original.</li></ul>
+      </div>
+      <div class="wm">
+        <span class="sample" style="font-family:'Plus Jakarta Sans';font-weight:800">FlowOps</span>
+        <p class="label">Plus Jakarta Sans ExtraBold</p>
+        <ul><li>Mais estreita e mais humanista.</li><li>O w e o s afastam-se da referência.</li></ul>
+      </div>
+      <div class="wm">
+        <span class="sample" style="font-family:'Lexend';font-weight:700">FlowOps</span>
+        <p class="label">Lexend Bold</p>
+        <ul><li>Também geométrica, mas mais larga e mais leve.</li><li>Perde o peso do original.</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="cor-title">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="label">Cor · paleta da brand board</span>
+      <h2 id="cor-title">Cores e regra do âmbar</h2>
+    </div>
+    <div class="swatches">
+      <div class="swatch"><div class="chip" style="background:#0F766E;color:#fff">Principal</div><div class="meta"><b class="mono">#0F766E</b><span>Botões e links · branco por cima 5,47 : 1</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#115E59;color:#fff">Escuro</div><div class="meta"><b class="mono">#115E59</b><span>Hover · branco por cima 7,58 : 1</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#F59E0B;color:#0F1F1C">Âmbar</div><div class="meta"><b class="mono">#F59E0B</b><span>Só pormenores · texto escuro 7,93 : 1</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#0F1F1C;color:#fff">Texto</div><div class="meta"><b class="mono">#0F1F1C</b><span>Sobre branco 17,0 : 1</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#F0FAF7;color:#0F766E">Fundo suave</div><div class="meta"><b class="mono">#F0FAF7</b><span>Principal por cima 5,14 : 1</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#FFFFFF;color:#0F1F1C;border-bottom:1px solid var(--line)">Branco</div><div class="meta"><b class="mono">#FFFFFF</b><span>Fundo dominante</span></div></div>
+    </div>
+
+    <h3 style="margin:40px 0 0">Contraste das combinações de fundo</h3>
+    <p class="note" style="margin-top:6px">Mínimo AA: 4,5 : 1 para texto normal. Os valores com marca de água foram medidos no pior caso, com o texto por cima do F.</p>
+    <div class="table-scroll">
+      <table class="contrast-table">
+        <thead><tr><th>Fundo</th><th>Texto</th><th>Contraste</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chipcell" style="background:#0F1F1C;color:#fff">#0F1F1C</span></td><td>Branco · verde-água #5EEAD4 · #B8CCC7</td><td class="num">17,0 · 11,5 · 10,1</td><td>Hero A, banda da frase, rodapé</td></tr>
+          <tr><td><span class="chipcell" style="background:#0F1F1C;color:#A3B8B3">#0F1F1C</span></td><td>#A3B8B3</td><td class="num">8,16</td><td>Texto do rodapé</td></tr>
+          <tr><td><span class="chipcell" style="background:#115E59;color:#fff">#115E59 + F a 5%</span></td><td>Branco · #CFE7E2 · verde-água</td><td class="num">6,72 · 5,18 · 4,54</td><td>Como trabalhamos (títulos, texto, etiqueta)</td></tr>
+          <tr><td><span class="chipcell" style="background:#0C4E4A;color:#fff">#0C4E4A</span></td><td>Branco · #CFE7E2 · verde-água</td><td class="num">9,53 · 7,34 · 6,44</td><td>Cartões dentro da secção escura</td></tr>
+          <tr><td><span class="chipcell" style="background:#0F766E;color:#fff">#0F766E + F a 6%</span></td><td>Branco</td><td class="num">4,88</td><td>Contacto final (todo o texto em branco)</td></tr>
+          <tr><td><span class="chipcell" style="background:#fff;color:#0F766E;border:1px solid #E1EAE7">#FFFFFF</span></td><td>Verde #0F766E</td><td class="num">5,47</td><td>Botão branco no contacto, links</td></tr>
+          <tr><td><span class="chipcell" style="background:#F0FAF7;color:#4B5B57">#F0FAF7</span></td><td>#4B5B57 · verde #0F766E</td><td class="num">6,72 · 5,14</td><td>Secções suaves</td></tr>
+          <tr><td><span class="chipcell" style="background:#F59E0B;color:#0F1F1C">#F59E0B</span></td><td>Tinta #0F1F1C</td><td class="num">7,93</td><td>Etiqueta "Sem custo", ícones de sucesso</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="amber-rule">
+      <div class="rule yes">
+        <div class="demo-row"><span class="ok-amber" style="width:32px;height:32px"><svg style="width:18px;height:18px"><use href="#ok"/></svg></span><span class="pill-amber">Texto escuro</span></div>
+        <p class="verdict">Correto: ícones de sucesso e realces com conteúdo escuro.</p>
+      </div>
+      <div class="rule no">
+        <div class="demo-row"><span class="pill-amber bad" aria-hidden="true">Fala connosco</span></div>
+        <p class="verdict">Nunca usar texto branco sobre âmbar (2,15 : 1). O botão âmbar com texto branco do mockup da brand board não será usado no site.</p>
+      </div>
+      <div class="rule yes">
+        <div class="demo-row"><span class="app-icon" style="width:40px;height:40px;border-radius:10px"><svg aria-hidden="true"><use href="#fmark"/></svg></span></div>
+        <p class="verdict">Exceção aprovada: o ✓ branco dentro do círculo do logótipo, por fazer parte da marca.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<footer>
+  <div class="wrap">Pré-visualização interna da FlowOps, ainda não é o site final. Faltam as fotografias, os contactos e os ficheiros finais do logótipo em <span class="mono">public/brand/</span>.</div>
+</footer>
+
+<script>
+(function () {
+  var stageA = document.getElementById('stage-a'), stageB = document.getElementById('stage-b');
+  if (stageA && stageB) {
+    stageB.appendChild(stageA.querySelector('.phone').cloneNode(true));
+    stageB.appendChild(stageA.querySelector('.steps-strip').cloneNode(true));
+  }
+  var root = document.documentElement;
+  var fontBtns = document.querySelectorAll('.font-switch button');
+  fontBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var f = btn.getAttribute('data-font');
+      if (f === 'bricolage') root.removeAttribute('data-font'); else root.setAttribute('data-font', f);
+      fontBtns.forEach(function (b) { b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+    });
+  });
+  var filterBtns = document.querySelectorAll('.filters button');
+  var cases = document.querySelectorAll('#cases .case');
+  filterBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var f = btn.getAttribute('data-filter');
+      filterBtns.forEach(function (b) { b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+      cases.forEach(function (c) {
+        c.hidden = !(f === 'todos' || c.getAttribute('data-tags').split(' ').indexOf(f) !== -1);
+      });
+    });
+  });
+})();
+</script>
+<script>
+/* v6: aparecimento ao scroll, linha do método, toque nos casos. Sem bibliotecas. */
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var root = document.documentElement;
+  var vh = function () { return window.innerHeight || root.clientHeight; };
+
+  // 1. Aparecimento suave: o que já está visível ao carregar nunca é escondido.
+  if (!reduce && 'IntersectionObserver' in window) {
+    var items = [].slice.call(document.querySelectorAll('.reveal'));
+    items.forEach(function (el) { if (el.getBoundingClientRect().top < vh() * 0.92) el.classList.add('in'); });
+    root.classList.add('js');
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+    items.forEach(function (el) { if (!el.classList.contains('in')) io.observe(el); });
+  }
+
+  // 2. Linha de fluxo do método, ligada ao scroll.
+  var flow = document.getElementById('flow');
+  if (flow && !reduce) {
+    var steps = [].slice.call(flow.querySelectorAll('.fstep'));
+    var ticking = false;
+    var update = function () {
+      ticking = false;
+      var r = flow.getBoundingClientRect();
+      var start = vh() * 0.8;
+      var p = (start - r.top) / (r.height * 0.85 + 1);
+      p = Math.max(0, Math.min(1, p));
+      flow.style.setProperty('--p', p.toFixed(3));
+      steps.forEach(function (s, i) { s.classList.toggle('lit', p >= i / 4 + 0.01); });
+      flow.classList.toggle('done', p >= 0.98);
+    };
+    window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  } else if (flow) {
+    flow.classList.add('done');
+  }
+
+  // 3. Casos: no telemóvel, um toque mostra a animação (o rato usa :hover).
+  [].slice.call(document.querySelectorAll('#cases .case')).forEach(function (c) {
+    c.addEventListener('click', function (ev) {
+      if (ev.target.closest('a')) return;
+      var on = !c.classList.contains('is-on');
+      document.querySelectorAll('#cases .case.is-on').forEach(function (o) { o.classList.remove('is-on'); });
+      if (on) c.classList.add('is-on');
+    });
+  });
+})();
+</script>
+</body>
+</html>
