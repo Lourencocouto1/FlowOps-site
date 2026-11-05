@@ -19,3 +19,6 @@ node_modules/
 
 # capturas de verificação
 screenshots/
+
+# estado local do Cloudflare (wrangler/miniflare)
+.wrangler/

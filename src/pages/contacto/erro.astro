@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WhatsAppIcon from '../../components/ui/WhatsAppIcon.astro';
+import { getSettings, whatsappHref } from '../../lib/site';
+const s = await getSettings();
+const wa = whatsappHref(s.contacts.whatsapp, s.whatsappMessage);
+// Página estática: o motivo (?motivo=) é mostrado pelo script abaixo.
+---
+<BaseLayout title="Não foi possível enviar" minimal noindex>
+  <section class="container-site grid max-w-[640px] justify-items-start gap-5 py-24">
+    <p class="eyebrow">Contacto</p>
+    <h1 class="text-[clamp(2rem,4vw,2.75rem)]">Não foi possível enviar a mensagem.</h1>
+    <p class="text-muted" data-reason>Verifique se preencheu todos os campos e aceitou a Política de Privacidade, e tente outra vez. Se o problema continuar, fale connosco pelo WhatsApp.</p>
+    <div class="flex flex-wrap gap-3">
+      <a href="/#contacto" class="btn btn-primary">Voltar ao formulário</a>
+      <a href={wa} class="btn btn-ghost"><WhatsAppIcon />Falar no WhatsApp</a>
+    </div>
+  </section>
+</BaseLayout>
+<script>
+  const texts: Record<string, string> = {
+    limite: 'Recebemos vários pedidos seguidos. Aguarde um minuto e tente outra vez.',
+    verificacao: 'Não foi possível confirmar que é uma pessoa. A verificação precisa de JavaScript ativo; ative-o ou fale connosco pelo WhatsApp.',
+    envio: 'Não conseguimos enviar a mensagem agora. Tente outra vez daqui a pouco ou fale connosco pelo WhatsApp.',
+    configuracao: 'O formulário ainda não está disponível. Fale connosco pelo WhatsApp.',
+  };
+  const reason = new URLSearchParams(location.search).get('motivo') ?? '';
+  const el = document.querySelector('[data-reason]');
+  if (el && texts[reason]) el.textContent = texts[reason];
+</script>

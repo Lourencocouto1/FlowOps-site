@@ -1,6 +1,8 @@
 ---
 import WhatsAppIcon from '../ui/WhatsAppIcon.astro';
 import BrandF from '../ui/BrandF.astro';
+import Icon from '../ui/Icon.astro';
+import { PUBLIC_TURNSTILE_SITE_KEY } from 'astro:env/client';
 import { getSection, getSettings, whatsappHref, bookingHref, isExternal } from '../../lib/site';
 
 const head = await getSection('contact');
@@ -8,7 +10,15 @@ const s = await getSettings();
 const wa = whatsappHref(s.contacts.whatsapp, s.whatsappMessage);
 const booking = bookingHref(s.contacts.whatsapp, s.whatsappMessage);
 const ext = (href: string) => (isExternal(href) ? { target: '_blank', rel: 'noopener' } : {});
-const field = 'min-h-12 w-full rounded-lg border border-[#9db5af] bg-white px-3.5 text-ink focus:border-brand';
+const field = 'min-h-12 w-full rounded-lg border border-[#9db5af] bg-white px-3.5 text-ink focus:border-brand aria-invalid:border-[#b42318]';
+const turnstileKey = PUBLIC_TURNSTILE_SITE_KEY;
+type Field = { name: string; label: string; type: 'text' | 'tel' | 'textarea'; autocomplete?: string; inputmode?: 'tel'; minlength: number; maxlength: number };
+const fields: Field[] = [
+  { name: 'nome', label: 'Nome', type: 'text', autocomplete: 'name', minlength: 2, maxlength: 100 },
+  { name: 'negocio', label: 'Negócio', type: 'text', autocomplete: 'organization', minlength: 2, maxlength: 120 },
+  { name: 'telemovel', label: 'Telemóvel', type: 'tel', autocomplete: 'tel', inputmode: 'tel', minlength: 9, maxlength: 20 },
+  { name: 'mensagem', label: 'Mensagem', type: 'textarea', minlength: 10, maxlength: 2000 },
+];
 ---
 <section class="section on-dark relative overflow-hidden bg-brand text-white" id="contacto" aria-labelledby="contacto-title">
   <BrandF class="wm-f text-white opacity-[0.06]" />
@@ -28,35 +38,154 @@ const field = 'min-h-12 w-full rounded-lg border border-[#9db5af] bg-white px-3.
       </ul>
     </div>
 
-    <!-- Envio, Turnstile e rate limiting: fase 4 (/api/contact). -->
-    <form class="reveal relative grid gap-3.5 rounded-[14px] bg-white p-7 text-ink shadow-[0_24px_48px_-28px_rgba(0,0,0,0.45)]" method="post" action="/api/contact" novalidate data-contact-form>
-      <h3 class="text-[1.15rem]">{head.formTitle}</h3>
-      <div class="grid gap-1.5">
-        <label for="c-nome" class="text-[0.95rem] font-semibold">Nome</label>
-        <input id="c-nome" name="nome" type="text" autocomplete="name" required maxlength="100" class={field} />
+    <div class="on-light reveal relative rounded-[14px] bg-white p-7 text-ink shadow-[0_24px_48px_-28px_rgba(0,0,0,0.45)]">
+      <!-- Sem JavaScript: o browser valida e envia; o servidor redireciona para /contacto/obrigado ou /contacto/erro. -->
+      <form class="grid gap-3.5" method="post" action="/api/contact" data-contact-form>
+        <h3 class="text-[1.15rem]">{head.formTitle}</h3>
+        <p class="sr-only" role="status" aria-live="polite" data-form-status></p>
+        <div class="hidden rounded-lg border border-[#f3c7c3] bg-[#fef3f2] p-3 text-[0.92rem] text-[#9f1c13]" role="alert" data-form-error></div>
+        {fields.map((f) => (
+          <div class="grid gap-1.5">
+            <label for={`c-${f.name}`} class="text-[0.95rem] font-semibold">{f.label}</label>
+            {f.type === 'textarea'
+              ? <textarea id={`c-${f.name}`} name={f.name} rows="4" required minlength={f.minlength} maxlength={f.maxlength} class={`${field} py-2.5`} aria-describedby={`c-${f.name}-erro`}></textarea>
+              : <input id={`c-${f.name}`} name={f.name} type={f.type} autocomplete={f.autocomplete} inputmode={f.inputmode} required minlength={f.minlength} maxlength={f.maxlength} class={field} aria-describedby={`c-${f.name}-erro`} />}
+            <p id={`c-${f.name}-erro`} class="hidden text-[0.88rem] font-medium text-[#9f1c13]" data-error-for={f.name}></p>
+          </div>
+        ))}
+        <!-- Honeypot: invisível para pessoas, preenchido por bots. -->
+        <div class="absolute -left-[9999px]" aria-hidden="true">
+          <label for="c-website">Não preencher</label>
+          <input id="c-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+        </div>
+        <div>
+          <label for="c-consentimento" class="flex min-h-11 items-start gap-3 py-1 text-[0.88rem] text-muted">
+            <input id="c-consentimento" name="consentimento" type="checkbox" required class="mt-0.5 size-6 shrink-0 accent-brand" aria-describedby="c-consentimento-erro" />
+            <span>{head.consent} <a href="/privacidade" class="font-semibold text-brand">Ler a política</a></span>
+          </label>
+          <p id="c-consentimento-erro" class="hidden text-[0.88rem] font-medium text-[#9f1c13]" data-error-for="consentimento"></p>
+        </div>
+        {turnstileKey && <div class="min-h-0" data-turnstile data-sitekey={turnstileKey}></div>}
+        <button type="submit" class="btn btn-primary disabled:cursor-wait disabled:opacity-70" data-submit>Enviar mensagem</button>
+      </form>
+
+      <div class="hidden gap-4" tabindex="-1" data-form-success>
+        <span class="grid size-12 place-items-center rounded-full bg-brand text-white"><Icon name="ok" class="size-6" strokeWidth={2.6} /></span>
+        <h3 class="text-[1.25rem]">Obrigado. Recebemos a sua mensagem.</h3>
+        <p class="text-muted">Vamos ler o seu pedido e responder pessoalmente, normalmente até 1 dia útil.</p>
       </div>
-      <div class="grid gap-1.5">
-        <label for="c-negocio" class="text-[0.95rem] font-semibold">Negócio</label>
-        <input id="c-negocio" name="negocio" type="text" autocomplete="organization" required maxlength="120" class={field} />
-      </div>
-      <div class="grid gap-1.5">
-        <label for="c-telemovel" class="text-[0.95rem] font-semibold">Telemóvel</label>
-        <input id="c-telemovel" name="telemovel" type="tel" autocomplete="tel" inputmode="tel" required maxlength="20" class={field} />
-      </div>
-      <div class="grid gap-1.5">
-        <label for="c-mensagem" class="text-[0.95rem] font-semibold">Mensagem</label>
-        <textarea id="c-mensagem" name="mensagem" rows="4" required maxlength="2000" class={`${field} py-2.5`}></textarea>
-      </div>
-      <!-- Honeypot: invisível para pessoas, preenchido por bots. -->
-      <div class="absolute -left-[9999px]" aria-hidden="true">
-        <label for="c-website">Não preencher</label>
-        <input id="c-website" name="website" type="text" tabindex="-1" autocomplete="off" />
-      </div>
-      <label for="c-rgpd" class="flex min-h-11 items-start gap-3 py-1 text-[0.88rem] text-muted">
-        <input id="c-rgpd" name="consentimento" type="checkbox" required class="mt-0.5 size-6 shrink-0 accent-brand" />
-        <span>{head.consent} <a href="/privacidade" class="font-semibold text-brand">Ler a política</a></span>
-      </label>
-      <button type="submit" class="btn btn-primary">Enviar mensagem</button>
-    </form>
+    </div>
   </div>
 </section>
+
+<script>
+  // Formulário com JavaScript: validação com mensagens próprias, Turnstile carregado só quando o formulário se aproxima,
+  // envio por fetch e resposta no próprio sítio. Sem JavaScript, o formulário continua a funcionar (POST normal).
+  type ApiResponse = { ok: boolean; message?: string; errors?: Record<string, string> };
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  const success = document.querySelector<HTMLElement>('[data-form-success]');
+  const alertBox = form?.querySelector<HTMLElement>('[data-form-error]');
+  const status = form?.querySelector<HTMLElement>('[data-form-status]');
+  const submit = form?.querySelector<HTMLButtonElement>('[data-submit]');
+  const ts = form?.querySelector<HTMLElement>('[data-turnstile]');
+  const messages: Record<string, string> = {
+    nome: 'Indique o seu nome.',
+    negocio: 'Indique o nome do negócio.',
+    telemovel: 'Indique um número de telemóvel válido.',
+    mensagem: 'Escreva uma mensagem com pelo menos 10 caracteres.',
+    consentimento: 'É preciso aceitar a Política de Privacidade para lhe podermos responder.',
+  };
+  declare global {
+    interface Window { turnstile?: { render(el: HTMLElement, o: Record<string, unknown>): string; reset(id?: string): void }; flowopsTurnstileReady?: () => void }
+  }
+  let widgetId: string | undefined;
+
+  function loadTurnstile() {
+    if (!ts || document.querySelector('script[data-turnstile-api]')) return;
+    window.flowopsTurnstileReady = () => {
+      widgetId = window.turnstile?.render(ts, { sitekey: ts.dataset.sitekey, language: 'pt', appearance: 'interaction-only', action: 'contact' });
+    };
+    const sc = document.createElement('script');
+    sc.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=flowopsTurnstileReady';
+    sc.async = true;
+    sc.defer = true;
+    sc.dataset.turnstileApi = '';
+    document.head.append(sc);
+  }
+
+  function setError(name: string, text: string) {
+    const input = form?.elements.namedItem(name) as HTMLInputElement | null;
+    const p = form?.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
+    input?.setAttribute('aria-invalid', text ? 'true' : 'false');
+    if (p) { p.textContent = text; p.classList.toggle('hidden', !text); }
+  }
+
+  function validate() {
+    let first: HTMLElement | null = null;
+    for (const name of Object.keys(messages)) {
+      const input = form?.elements.namedItem(name) as HTMLInputElement | null;
+      if (!input) continue;
+      let bad = !input.checkValidity();
+      if (name === 'telemovel' && !bad) bad = !/^\+?\d{9,15}$/.test(input.value.replace(/[\s().-]/g, ''));
+      setError(name, bad ? messages[name]! : '');
+      if (bad && !first) first = input;
+    }
+    first?.focus();
+    return !first;
+  }
+
+  if (form && success && submit) {
+    form.noValidate = true;
+    if (ts) {
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) { loadTurnstile(); io.disconnect(); } }, { rootMargin: '600px 0px' });
+        io.observe(form);
+      } else loadTurnstile();
+      form.addEventListener('focusin', loadTurnstile, { once: true });
+    }
+    form.querySelectorAll<HTMLInputElement>('input, textarea').forEach((el) =>
+      el.addEventListener('input', () => { if (el.getAttribute('aria-invalid') === 'true' && el.checkValidity()) setError(el.name, ''); }),
+    );
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertBox?.classList.add('hidden');
+      if (!validate()) { if (status) status.textContent = 'Há campos por corrigir.'; return; }
+      const data = new FormData(form);
+      if (ts && !data.get('cf-turnstile-response')) {
+        loadTurnstile();
+        showAlert('A verificação de segurança ainda está a carregar. Aguarde um momento e carregue outra vez em Enviar.');
+        return;
+      }
+      submit.disabled = true;
+      submit.textContent = 'A enviar…';
+      if (status) status.textContent = 'A enviar a mensagem.';
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
+        const json = (await res.json().catch(() => ({ ok: false }))) as ApiResponse;
+        if (json.ok) {
+          form.classList.add('hidden');
+          success.classList.replace('hidden', 'grid');
+          success.focus();
+          return;
+        }
+        if (json.errors) Object.entries(json.errors).forEach(([k, v]) => setError(k, v));
+        showAlert(json.message ?? 'Não conseguimos enviar a mensagem. Tente outra vez ou fale connosco pelo WhatsApp.');
+      } catch {
+        showAlert('Sem ligação à internet? Não conseguimos enviar a mensagem. Tente outra vez ou fale connosco pelo WhatsApp.');
+      } finally {
+        if (!form.classList.contains('hidden')) {
+          submit.disabled = false;
+          submit.textContent = 'Enviar mensagem';
+          if (widgetId !== undefined) window.turnstile?.reset(widgetId);
+        }
+      }
+    });
+  }
+
+  function showAlert(text: string) {
+    if (!alertBox) return;
+    alertBox.textContent = text;
+    alertBox.classList.remove('hidden');
+  }
+</script>

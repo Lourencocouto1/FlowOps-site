@@ -13,7 +13,7 @@ import { chromium, firefox, webkit, devices } from '@playwright/test';
 import { spawn } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 
-const PAGES = (process.env.PAGES || '/,/privacidade,/404').split(',');
+const PAGES = (process.env.PAGES || '/,/privacidade,/404,/contacto/obrigado,/contacto/erro').split(',');
 const SHOTS = process.env.SHOTS !== '0';
 const port = 4329;
 
@@ -139,6 +139,51 @@ async function runMotion(engineName, label, contextOptions) {
   await browser.close();
 }
 
+/** Formulário de contacto no browser: erros acessíveis, Turnstile (chave de teste) e envio (simulado). */
+async function runForm(engineName, label, contextOptions) {
+  if (skipped.has(engineName)) return;
+  let browser;
+  try { browser = await engines[engineName].launch(); } catch { skipped.add(engineName); return; }
+  const context = await browser.newContext({ ...contextOptions, reducedMotion: 'reduce' });
+  const page = await context.newPage();
+  const issues = [];
+  page.on('pageerror', (e) => issues.push(`erro JS: ${e.message}`));
+  // Cada teste usa um "IP" próprio, para não esbarrar no limite de 5 pedidos por minuto.
+  const ip = `10.9.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
+  await page.route('**/api/contact', (route) => route.continue({ headers: { ...route.request().headers(), 'cf-connecting-ip': ip } }));
+  await page.goto(`http://localhost:${port}/#contacto`, { waitUntil: 'networkidle' });
+  const form = page.locator('[data-contact-form]');
+  await form.scrollIntoViewIfNeeded();
+  await page.locator('[data-submit]').click();
+  const empty = await page.evaluate(() => ({
+    invalid: document.querySelectorAll('[data-contact-form] [aria-invalid="true"]').length,
+    shown: [...document.querySelectorAll('[data-error-for]')].filter((p) => !p.classList.contains('hidden')).length,
+    focus: document.activeElement?.id,
+  }));
+  if (empty.invalid < 5 || empty.shown < 5) issues.push(`envio vazio: ${empty.invalid} campos marcados, ${empty.shown} mensagens (esperado 5)`);
+  if (empty.focus !== 'c-nome') issues.push(`envio vazio: o foco foi para "${empty.focus}" em vez do primeiro campo`);
+  await page.fill('#c-nome', 'Ana Teste');
+  await page.fill('#c-negocio', 'Negócio de Teste');
+  await page.fill('#c-telemovel', '912 345 678');
+  await page.fill('#c-mensagem', 'Mensagem automática de verificação do formulário.');
+  await page.check('#c-consentimento');
+  try {
+    await page.waitForFunction(() => !!document.querySelector('[name="cf-turnstile-response"]')?.value, null, { timeout: 15000 });
+  } catch { issues.push('o Turnstile não devolveu token em 15 s'); }
+  await page.locator('[data-submit]').click();
+  try {
+    await page.locator('[data-form-success]').waitFor({ state: 'visible', timeout: 10000 });
+    const focused = await page.evaluate(() => document.activeElement?.hasAttribute('data-form-success'));
+    if (!focused) issues.push('a confirmação apareceu mas não recebeu o foco');
+  } catch {
+    const msg = await page.locator('[data-form-error]').textContent().catch(() => '');
+    issues.push(`envio válido sem confirmação${msg ? `: "${msg.trim()}"` : ''}`);
+  }
+  report.push({ engine: engineName, label: `${label} (formulário)`, path: '/#contacto', issues });
+  console.log(`${issues.length ? '✗' : '✓'} ${engineName.padEnd(8)} ${(label + ' formulário').padEnd(22)} /#contacto${issues.length ? '\n    - ' + issues.join('\n    - ') : ''}`);
+  await browser.close();
+}
+
 const report = [];
 async function run(engineName, label, contextOptions) {
   if (skipped.has(engineName)) return;
@@ -191,6 +236,9 @@ try {
     await runMotion(engineName, '1280', { viewport: { width: 1280, height: 800 } });
   }
   await runMotion('webkit', 'iphone-15', devices['iPhone 15']);
+  for (const engineName of Object.keys(engines)) await runForm(engineName, '1280', { viewport: { width: 1280, height: 800 } });
+  await runForm('webkit', 'iphone-15', devices['iPhone 15']);
+  await runForm('chromium', 'pixel-7', devices['Pixel 7']);
 } finally {
   server.kill();
   spawn('npx', ['astro', 'preview', 'stop'], { stdio: 'ignore' });

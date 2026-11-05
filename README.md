@@ -1,7 +1,7 @@
 # Website da FlowOps
 
 Site institucional da FlowOps: software, websites e apps à medida, em Lisboa.
-Feito com [Astro](https://astro.build) 7, Tailwind CSS 4 e TypeScript. O site é estático; só o formulário de contacto (`/api/contact`) corre no servidor.
+Feito com [Astro](https://astro.build) 7, Tailwind CSS 4 e TypeScript. O site é estático; só o formulário de contacto (`/api/contact`) corre no servidor (Cloudflare Workers).
 
 ## Correr localmente
 
@@ -54,7 +54,7 @@ Todos os textos estão em `src/content/`. Não é preciso mexer no código. Se u
 | `PUBLIC_SITE_URL` | Domínio final, usado no canonical e no sitemap |
 | `PUBLIC_BOOKING_URL` | Link da plataforma de marcações (projeto separado). Se ficar vazio, "Marcar uma conversa" abre o WhatsApp com a mensagem pré-preenchida |
 | `PUBLIC_SHOW_PRICING` | `true` para mostrar a secção de preços |
-| `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | Formulário de contacto (fase 4) |
+| `PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `CONTACT_DRY_RUN` | Formulário de contacto (ver abaixo) |
 
 Nunca coloque segredos no repositório. O `.env` está no `.gitignore`.
 
@@ -66,6 +66,31 @@ Alvo: as duas últimas versões de Safari (iOS e macOS), Chrome (Android e deskt
 - **Toque:** todas as áreas de toque têm pelo menos 44 × 44 px, exceto links dentro de texto corrido. Nada depende só de hover; o Tailwind 4 só aplica `hover:` em dispositivos com rato.
 - **Movimento:** está em `src/styles/motion.css` e `src/scripts/motion.ts`, e só é ativado quando o sistema não pede movimento reduzido (classe `.motion` no `<html>`). Sem JavaScript, ou com movimento reduzido, tudo aparece logo no estado final. O ciclo do hero tem um botão de pausa (WCAG 2.2.2) e para sozinho quando sai do ecrã. Se o script falhar, uma salvaguarda em CSS mostra os elementos ao fim de 4 s.
 - Antes de publicar, testar também em aparelhos reais (iPhone e Android), porque a emulação não reproduz tudo.
+
+## Formulário de contacto
+
+`POST /api/contact` (`src/pages/api/contact.ts`, lógica em `src/lib/contact.ts`) corre num Worker da Cloudflare. O resto do site é estático. Por ordem, faz:
+
+1. verificação da origem (só aceita pedidos do próprio site) e do tamanho máximo;
+2. honeypot (campo escondido "website": se vier preenchido, responde "ok" e não envia nada);
+3. limite de **5 pedidos por minuto por IP**: binding `CONTACT_LIMITER` em `wrangler.jsonc`, com uma salvaguarda em memória;
+4. validação dos campos, com mensagens em português;
+5. Cloudflare Turnstile;
+6. envio pelo Resend.
+
+Com JavaScript, o formulário mostra os erros junto a cada campo e a confirmação no próprio sítio. Sem JavaScript, faz um POST normal e redireciona para `/contacto/obrigado` ou `/contacto/erro`. O Turnstile, porém, precisa de JavaScript, por isso sem ele o envio é recusado e a página de erro sugere o WhatsApp.
+
+**Modo simulado:** com `CONTACT_DRY_RUN=true`, ou em desenvolvimento sem `RESEND_API_KEY`, valida tudo mas não envia o email. Em produção, sem chaves e sem modo simulado, responde que o formulário não está disponível e sugere o WhatsApp. Nunca perde mensagens em silêncio.
+
+**Chaves de teste do Turnstile** (já no `.env.example`): site `1x00000000000000000000AA` e segredo `1x0000000000000000000000000000000AA` (passa sempre). O segredo `2x0000000000000000000000000000000AA` falha sempre.
+
+**Ativar o envio real:**
+1. No Resend, verificar o domínio e criar uma chave de API.
+2. Na Cloudflare, criar o widget Turnstile para o domínio.
+3. No painel do Worker (Settings → Variables and Secrets), definir `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `TURNSTILE_SECRET_KEY` (secretos) e `PUBLIC_TURNSTILE_SITE_KEY`. Remover `CONTACT_DRY_RUN` ou pô-lo a `false`.
+4. A `PUBLIC_TURNSTILE_SITE_KEY` entra no build, por isso tem de estar definida também nas variáveis de build.
+
+Localmente, o `npm run build` copia o `.env` para `dist/server/.dev.vars`, que é usado pelo `npm run preview`. Depois de mudar o `.env`, volte a fazer build. Esse ficheiro não é enviado no deploy.
 
 ## Marca
 

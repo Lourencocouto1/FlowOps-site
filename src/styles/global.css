@@ -51,6 +51,8 @@
     border-radius: 6px;
   }
   .on-dark :focus-visible { outline-color: var(--color-aqua); }
+  /* Cartões brancos dentro de secções escuras (ex.: formulário): foco verde, visível sobre branco (5,47 : 1). */
+  .on-dark .on-light :focus-visible { outline-color: var(--color-brand); }
 }
 
 @layer components {
