@@ -1,16 +1,20 @@
 ---
 import Logo from './ui/Logo.astro';
-import { getSettings, whatsappHref } from '../lib/site';
+import { brand, getSettings, ownersText, whatsappHref } from '../lib/site';
 
 const s = await getSettings();
 const year = new Date().getFullYear();
 const wa = whatsappHref(s.contacts.whatsapp, s.whatsappMessage);
+const social = [
+  { label: 'Instagram', href: s.social.instagram },
+  { label: 'LinkedIn', href: s.social.linkedin },
+].filter((n) => n.href);
 ---
 <footer class="on-dark bg-ink pt-14 pb-[max(2rem,env(safe-area-inset-bottom))] text-[0.92rem] text-on-dark">
   <div class="container-site">
-    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+    <div class:list={["grid gap-8 sm:grid-cols-2", social.length ? "lg:grid-cols-4" : "lg:grid-cols-3"]}>
       <div class="grid content-start gap-3">
-        <a href="/" class="tap justify-self-start rounded-md" aria-label="FlowOps, página inicial"><Logo variant="dark" class="h-9 w-auto" /></a>
+        <a href="/" class="tap justify-self-start rounded-md" aria-label={`${brand.name}, página inicial`}><Logo variant="dark" class="h-9 w-auto" /></a>
         <p>Software, websites e apps à medida para negócios em {s.city}.</p>
       </div>
 
@@ -41,25 +45,22 @@ const wa = whatsappHref(s.contacts.whatsapp, s.whatsappMessage);
         </ul>
       </div>
 
-      <div>
-        <h2 class="mb-3 font-sans text-[0.8rem] font-semibold tracking-[0.06em] text-white uppercase">Redes</h2>
-        <ul class="grid">
-          <li>
-            {s.social.instagram
-              ? <a class="tap text-white no-underline hover:text-aqua" href={s.social.instagram} rel="noopener">Instagram</a>
-              : <>Instagram <span class="placeholder-confirm">A CONFIRMAR</span></>}
-          </li>
-          <li>
-            {s.social.linkedin
-              ? <a class="tap text-white no-underline hover:text-aqua" href={s.social.linkedin} rel="noopener">LinkedIn</a>
-              : <>LinkedIn <span class="placeholder-confirm">A CONFIRMAR</span></>}
-          </li>
-        </ul>
-      </div>
+      {/* Redes: só aparecem as que tiverem link em settings.json (podem ficar para depois da publicação). */}
+      {social.length > 0 && (
+        <div>
+          <h2 class="mb-3 font-sans text-[0.8rem] font-semibold tracking-[0.06em] text-white uppercase">Redes</h2>
+          <ul class="grid">
+            {social.map((n) => (
+              <li><a class="tap text-white no-underline hover:text-aqua" href={n.href} rel="noopener">{n.label}</a></li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
 
-    <div class="mt-10 flex flex-wrap justify-between gap-x-6 gap-y-2 border-t border-[#2a3f3b] pt-5">
-      <span>© {year} FlowOps</span>
+    <p class="mt-10 border-t border-[#2a3f3b] pt-5">{brand.name} é a marca comercial de {ownersText}, trabalhadores independentes.</p>
+    <div class="mt-3 flex flex-wrap justify-between gap-x-6 gap-y-2">
+      <span>© {year} {brand.name}</span>
       <span>
         <a class="tap text-white no-underline hover:text-aqua" href="/privacidade">Política de Privacidade</a>
         <span aria-hidden="true"> · </span>

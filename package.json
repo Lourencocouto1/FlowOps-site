@@ -12,7 +12,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "verify": "node scripts/verify.mjs"
+    "brand": "node scripts/build-brand.mjs",
+    "verify": "node scripts/verify.mjs",
+    "lighthouse": "node scripts/lighthouse.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "14.4.2",
@@ -25,6 +27,7 @@
     "@astrojs/check": "0.9.12",
     "@playwright/test": "1.64.1",
     "@tailwindcss/vite": "4.3.3",
+    "lighthouse": "13.5.0",
     "tailwindcss": "4.3.3",
     "typescript": "6.0.3",
     "wrangler": "4.145.0"

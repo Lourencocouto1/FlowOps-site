@@ -22,3 +22,9 @@ screenshots/
 
 # estado local do Cloudflare (wrangler/miniflare)
 .wrangler/
+
+# relatórios Lighthouse: só o resumo e os da página inicial entram no repositório
+docs/lighthouse/*
+!docs/lighthouse/resumo.md
+!docs/lighthouse/telemovel-inicio.html
+!docs/lighthouse/computador-inicio.html

@@ -1,28 +1,37 @@
 ---
 import LegalLayout from '../layouts/LegalLayout.astro';
+import Owners from '../components/legal/Owners.astro';
+import Address from '../components/legal/Address.astro';
+import { brand, getSettings } from '../lib/site';
+const { contacts } = await getSettings();
 ---
 <LegalLayout
   title="Termos de Utilização"
-  description="Condições de utilização do site da FlowOps."
+  description={`Condições de utilização do site da ${brand.name}.`}
   updated="[A CONFIRMAR: data de publicação]"
 >
   <p class="rounded-lg bg-soft p-4 text-[0.92rem]"><strong>Rascunho.</strong> Este texto é uma base e deve ser revisto por um jurista antes da publicação.</p>
 
-  <h2>1. Sobre este site</h2>
-  <p>Este site é da FlowOps <span class="placeholder-confirm">A CONFIRMAR: denominação legal e NIF</span> e apresenta os serviços de desenvolvimento de software, websites e apps à medida.</p>
+  <h2>1. Quem presta o serviço</h2>
+  <p>{brand.name} é a marca comercial de <Owners />, trabalhadores independentes. Este site apresenta os serviços de desenvolvimento de software, websites e apps à medida que prestam.</p>
+  <p>Morada: <Address />. Contacto: {contacts.email ? <a href={`mailto:${contacts.email}`}>{contacts.email}</a> : <span class="placeholder-confirm">A CONFIRMAR: email</span>}.</p>
 
   <h2>2. Informação apresentada</h2>
-  <p>A informação do site é geral e não constitui uma proposta comercial. As condições de cada projeto, incluindo preço, prazo e suporte, ficam definidas na proposta por escrito enviada a cada cliente.</p>
+  <p>A informação do site é geral e não constitui uma proposta comercial. As condições de cada projeto, incluindo preço, prazo e suporte, ficam definidas na proposta por escrito enviada a cada cliente. A proposta indica também quem presta o serviço e emite a fatura.</p>
 
   <h2>3. Projetos de demonstração</h2>
   <p>Os projetos identificados como "Projeto de demonstração" usam empresas fictícias, criadas para mostrar o tipo de trabalho que fazemos. Qualquer semelhança com empresas reais é involuntária.</p>
 
   <h2>4. Propriedade intelectual</h2>
-  <p>Os textos, o logótipo e o design deste site são da FlowOps. Não podem ser reproduzidos sem autorização.</p>
+  <p>Os textos, o logótipo e o design deste site pertencem aos titulares da marca {brand.name}. Não podem ser reproduzidos sem autorização.</p>
 
   <h2>5. Responsabilidade</h2>
   <p>Fazemos o possível para manter o site disponível e a informação correta, mas não garantimos que esteja sempre livre de erros ou interrupções.</p>
 
-  <h2>6. Lei aplicável</h2>
+  <h2>6. Resolução de litígios</h2>
+  <p>Em caso de litígio de consumo, o consumidor pode recorrer a uma entidade de resolução alternativa de litígios de consumo: <span class="placeholder-confirm">A CONFIRMAR: entidade competente</span>. Mais informação no <a href="https://www.consumidor.gov.pt" rel="noopener">Portal do Consumidor</a>.</p>
+  <p>Livro de Reclamações Eletrónico: <a href="https://www.livroreclamacoes.pt" rel="noopener">livroreclamacoes.pt</a> <span class="placeholder-confirm">A CONFIRMAR: obrigatoriedade para esta atividade</span>.</p>
+
+  <h2>7. Lei aplicável</h2>
   <p>Estes termos regem-se pela lei portuguesa.</p>
 </LegalLayout>

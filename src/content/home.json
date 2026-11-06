@@ -34,7 +34,7 @@
   "about": {
     "label": "Sobre nós",
     "title": "Quem está do outro lado",
-    "lead": "Criámos a FlowOps para pôr a formação e a experiência que temos em desenvolvimento de software ao serviço dos negócios locais. Somos de Lisboa e falamos consigo pessoalmente.",
+    "lead": "Criámos a {marca} para pôr a formação e a experiência que temos em desenvolvimento de software ao serviço dos negócios locais. Somos de Lisboa e falamos consigo pessoalmente.",
     "quote": "Somos de Lisboa e gostamos de resolver problemas. O seu tempo é para os seus clientes. A tecnologia fica connosco."
   },
   "pricing": {
@@ -52,6 +52,6 @@
     "title": "Conte-nos o que está a travar o seu negócio",
     "lead": "O diagnóstico é sem custo e não obriga a avançar. Respondemos pessoalmente.",
     "formTitle": "Envie-nos uma mensagem",
-    "consent": "Aceito que a FlowOps use estes dados para responder ao meu pedido, conforme a Política de Privacidade."
+    "consent": "Aceito que a {marca} use estes dados para responder ao meu pedido, conforme a Política de Privacidade."
   }
 }

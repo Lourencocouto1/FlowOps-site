@@ -1,6 +1,6 @@
 # Website da FlowOps
 
-Site institucional da FlowOps: software, websites e apps à medida, em Lisboa.
+Site institucional da FlowOps, marca comercial de Lourenço Couto e Pedro Marques (trabalhadores independentes): software, websites e apps à medida, em Lisboa.
 Feito com [Astro](https://astro.build) 7, Tailwind CSS 4 e TypeScript. O site é estático; só o formulário de contacto (`/api/contact`) corre no servidor (Cloudflare Workers).
 
 ## Correr localmente
@@ -19,7 +19,21 @@ npm run dev               # http://localhost:4321
 | `npm run build` | Gera o site em `dist/` |
 | `npm run preview` | Serve o build localmente |
 | `npm run check` | Verifica tipos e conteúdos |
-| `npm run verify` | Verificação em Chromium, WebKit (Safari) e Firefox: 320, 375, 768, 1024, 1280, 1440, 1920 px, telemóvel na horizontal, iPhone, iPad e Android. Mede scroll horizontal, áreas de toque < 44 px, campos < 16 px e erros de JavaScript, e faz uma passagem com movimento ativo (ciclo do hero, pausa, nada escondido depois do scroll); capturas em `screenshots/` (precisa de `npx playwright install chromium firefox webkit`) |
+| `npm run brand` | Gera todos os ficheiros da marca (logótipos, favicon, ícones, imagem Open Graph) a partir de `public/brand/logo-source.svg` |
+| `npm run verify` | Verificação em Chromium, WebKit (Safari) e Firefox: 320, 375, 768, 1024, 1280, 1440, 1920 px, telemóvel na horizontal, iPhone, iPad e Android. Mede scroll horizontal, áreas de toque < 44 px, campos < 16 px, erros de JavaScript e violações da CSP, cabeçalhos de segurança, meta tags de SEO, `robots.txt`, sitemap e manifest; faz uma passagem com movimento ativo e testa o formulário. Capturas em `screenshots/` (precisa de `npx playwright install chromium firefox webkit`) |
+| `npm run lighthouse` | Lighthouse em telemóvel e computador (mediana de 3 corridas); relatórios em `docs/lighthouse/` |
+
+`verify` e `lighthouse` usam o build: correr `npm run build` antes.
+
+## Nome, domínio e titulares: `site.config.mjs`
+
+O nome comercial, o domínio, a URL canónica, os titulares (nome e NIF) e a morada estão **só** em `site.config.mjs`. Títulos, Open Graph, schema.org, sitemap, `robots.txt`, manifest, rodapé, páginas legais e o email do formulário leem daí. Nos textos de `src/content/`, `{marca}` é substituído pelo nome.
+
+Para mudar de nome ou de domínio:
+1. Editar `site.config.mjs`.
+2. `npm run brand` (a imagem Open Graph e os títulos dos SVG levam o nome). Se o nome mudar, o logótipo também muda: ver "Marca".
+3. `npm run build`.
+4. Fora do código: domínio no Worker da Cloudflare, hostnames do Turnstile, domínio no Resend e `CONTACT_FROM_EMAIL`, site no Umami (ver "Deploy").
 
 ## Onde editar cada conteúdo
 
@@ -51,10 +65,13 @@ Todos os textos estão em `src/content/`. Não é preciso mexer no código. Se u
 
 | Variável | Para quê |
 |---|---|
-| `PUBLIC_SITE_URL` | Domínio final, usado no canonical e no sitemap |
+| `PUBLIC_SITE_URL` | Opcional, só para pré-visualizações noutro endereço. O domínio está em `site.config.mjs` |
 | `PUBLIC_BOOKING_URL` | Link da plataforma de marcações (projeto separado). Se ficar vazio, "Marcar uma conversa" abre o WhatsApp com a mensagem pré-preenchida |
 | `PUBLIC_SHOW_PRICING` | `true` para mostrar a secção de preços |
 | `PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `CONTACT_DRY_RUN` | Formulário de contacto (ver abaixo) |
+| `PUBLIC_UMAMI_SRC`, `PUBLIC_UMAMI_WEBSITE_ID`, `PUBLIC_UMAMI_HOST` | Estatísticas Umami, sem cookies. Vazio: não carrega nada. Só conta visitas no domínio de `site.config.mjs` |
+
+As variáveis `PUBLIC_*` entram no build (incluindo a CSP); as outras são lidas pelo Worker em tempo de execução.
 
 Nunca coloque segredos no repositório. O `.env` está no `.gitignore`.
 
@@ -94,24 +111,23 @@ Localmente, o `npm run build` copia o `.env` para `dist/server/.dev.vars`, que �
 
 ## Marca
 
-Os ficheiros finais estão em `public/brand/`:
+**Um só ficheiro de origem:** `public/brand/logo-source.svg`. Todos os outros são gerados por `npm run brand` (`scripts/build-brand.mjs`):
 
-- `logo-horizontal(-dark).svg` e `logo-vertical(-dark).svg`
-- `symbol(-dark).svg`
-- `icon-app.svg` e `icon-profile.svg`
-- em `public/`: `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `icon-192.png` e `icon-512.png`
+- `public/brand/`: `logo-horizontal(-dark).svg`, `logo-vertical(-dark).svg`, `symbol(-dark).svg`, `mark.svg` (só o F, para as marcas de água), `icon-app.svg`, `icon-profile.svg`
+- `public/`: `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`
+- `public/og/default.png`: imagem de partilha 1200 × 630 (logótipo, título do hero de `home.json`, localidade)
 
-Todos são gerados por script:
-
-```bash
-# precisa de: pip install fonttools uharfbuzz   e da fonte Outfit[wght].ttf (Google Fonts, licença OFL)
-python scripts/build-brand.py caminho/Outfit[wght].ttf   # SVG, com o wordmark convertido em paths
-node scripts/build-icons.mjs                             # PNG do favicon e dos ícones
-```
+**Trocar de logótipo:** substituir `logo-source.svg` pelo novo, seguindo as regras escritas no próprio ficheiro: um grupo `id="symbol"`, um grupo `id="wordmark"` (texto convertido em paths) e as classes `mark`, `accent`, `accent-ink` e `text`, que dizem a cor de cada forma em cada versão. Depois, `npm run brand` e `npm run build`. Se a forma nova pedir outra cor de fundo nos ícones ou outras cores, ajustar `VARIANTS` e `C` no início de `scripts/build-brand.mjs`.
 
 Cores (brand board): `#0F766E` principal · `#115E59` escuro · `#F59E0B` âmbar · `#0F1F1C` texto · `#F0FAF7` fundo suave.
 **Regra do âmbar:** usar só em pormenores e **nunca com texto branco por cima** (2,15 : 1). Quando houver texto sobre âmbar, é sempre escuro `#0F1F1C` (7,93 : 1).
-Fontes do site: Manrope nos títulos e Inter no texto, ambas self-hosted via Fontsource com `font-display: swap`.
+Fontes do site: Manrope nos títulos e Inter no texto, ambas self-hosted via Fontsource com `font-display: swap` e pré-carregadas.
+
+## SEO, segurança e desempenho
+
+- **SEO:** título, descrição e canonical por página; Open Graph e cartão do X/Twitter com `/og/default.png`; schema.org `Organization` (nome comercial, sem dados de sociedade) e `WebSite` na página inicial; `robots.txt` e sitemap gerados a partir da URL canónica; páginas de `/contacto/` e 404 com `noindex` e fora do sitemap.
+- **Cabeçalhos de segurança:** gerados no build por `integrations/security-headers.mjs` em `dist/client/_headers`. A Content-Security-Policy leva o hash de cada script inline e só permite o Turnstile (`challenges.cloudflare.com`) e, se configurado, o Umami. HSTS de 1 ano com `includeSubDomains` (sem `preload`). Também `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` e `Cross-Origin-Opener-Policy`. O build falha se alguém acrescentar um `onclick=` inline, que a CSP bloquearia.
+- **Desempenho:** sem frameworks no cliente, CSS único, fontes pré-carregadas, imagens otimizadas no build. Resultados em `docs/lighthouse/resumo.md`.
 
 ## Estrutura
 
@@ -124,14 +140,57 @@ src/
     ui/               logótipo, ícones, cabeçalhos de secção
   layouts/            BaseLayout (todas as páginas) e LegalLayout
   pages/              index, privacidade, termos, 404 (futuro: blog/, casos/, produtos/)
-  lib/site.ts         leitura dos conteúdos, links de WhatsApp e de marcação
+  lib/site.ts         leitura dos conteúdos, marca, links de WhatsApp e de marcação
+  lib/contact.ts      validação e email do formulário
+  pages/api/contact.ts  o único código que corre no servidor
   styles/global.css   tokens da marca (Tailwind @theme) e estilos base
-public/brand/         logótipos e ícones
-scripts/              geração da marca e capturas de verificação
+site.config.mjs       nome, domínio, URL canónica, titulares, morada
+integrations/         cabeçalhos de segurança (CSP) gerados no build
+public/brand/         logo-source.svg (origem) e ficheiros gerados
+scripts/              build-brand, verify, lighthouse
+docs/lighthouse/      relatórios Lighthouse
+A-CONFIRMAR.md        o que falta decidir ou preencher antes de publicar
 ```
 
 Para crescer: as páginas novas vão para `src/pages/` e reutilizam o `BaseLayout`. Um blog ou casos de estudo completos passam a ser uma coleção nova em `content.config.ts`.
 
-## Deploy
+## Deploy (Cloudflare Workers)
 
-As instruções completas para a Cloudflare, com o domínio próprio `[A CONFIRMAR: flowops.pt]`, entram na fase 5, juntamente com o formulário. Resumo: ligar o repositório na Cloudflare (Workers & Pages), comando de build `npm run build`, pasta `dist`, e definir as variáveis do `.env` no painel.
+> Ainda não publicar a versão final: o nome e o domínio estão por confirmar. Ver `A-CONFIRMAR.md`.
+
+O site é um Worker com ficheiros estáticos: o Astro gera `dist/client/` (páginas, servidas diretamente) e `dist/server/` (só o `/api/contact`). Não há base de dados nem KV.
+
+### 1. Primeira publicação (pré-visualização em `*.workers.dev`)
+
+Pelo Git (recomendado, publica a cada push):
+1. Cloudflare → **Workers & Pages** → **Create** → **Import a repository** e escolher o repositório.
+2. Build command: `npm run build`. Deploy command: `npx wrangler deploy`. Node.js 22 ou mais recente (variável de build `NODE_VERSION=22`, se for preciso).
+3. Em **Settings → Build → Variables**, as variáveis do build: `PUBLIC_TURNSTILE_SITE_KEY`, `PUBLIC_BOOKING_URL`, `PUBLIC_SHOW_PRICING`, `PUBLIC_UMAMI_*` e, só nesta fase, `PUBLIC_SITE_URL` com o endereço `*.workers.dev`.
+4. Em **Settings → Variables and Secrets**, as do Worker (tipo *Secret*): `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`. E `CONTACT_DRY_RUN` = `true` enquanto não houver Resend.
+
+Ou pelo terminal: `npx wrangler login`, `npm run build`, `npx wrangler deploy`; segredos com `npx wrangler secret put TURNSTILE_SECRET_KEY` (e os outros).
+
+O limite de pedidos (`CONTACT_LIMITER` em `wrangler.jsonc`) não precisa de configuração no painel. O `namespace_id` só tem de ser único na conta.
+
+### 2. Domínio próprio
+
+1. Adicionar o domínio à Cloudflare (**Add a domain**) e trocar os nameservers no registo do domínio.
+2. No Worker: **Settings → Domains & Routes → Add → Custom domain**, com o domínio e o `www.`. Criar uma **Redirect Rule** de `www.` para o domínio sem `www` (301).
+3. Retirar `PUBLIC_SITE_URL` das variáveis de build (passa a valer o `DOMAIN` de `site.config.mjs`) e publicar de novo.
+4. Desligar o endereço `workers.dev` e os *preview URLs* do Worker, para não haver uma cópia do site indexada noutro endereço.
+
+### 3. Serviços externos
+
+- **Turnstile:** widget *Managed* com o domínio na lista de hostnames (e o `*.workers.dev` enquanto for usado). Chaves no passo 1.
+- **Resend:** adicionar o domínio, criar os registos DNS que o Resend indicar (SPF, DKIM) e um registo DMARC; `CONTACT_FROM_EMAIL` com um endereço desse domínio. Depois `CONTACT_DRY_RUN=false` (ou apagar).
+- **Umami:** criar o site com o domínio e preencher `PUBLIC_UMAMI_SRC` e `PUBLIC_UMAMI_WEBSITE_ID`. Publicar de novo: a CSP é regenerada com o endereço do Umami.
+
+### 4. Depois de publicar
+
+- Enviar um pedido real pelo formulário (com e sem JavaScript) e confirmar que o email chega.
+- [securityheaders.com](https://securityheaders.com) e a consola do browser (sem avisos de CSP), com o Umami ligado.
+- [PageSpeed Insights](https://pagespeed.web.dev) com a URL pública.
+- Google Search Console: verificar o domínio e enviar `/sitemap-index.xml`.
+- Pré-visualização da partilha (ex.: LinkedIn Post Inspector).
+- Testar em iPhone e Android reais.
+- **HSTS preload:** só quando o domínio estiver definitivo e todos os subdomínios em HTTPS. Mudar em `astro.config.mjs` (`securityHeaders({ hsts: 'max-age=63072000; includeSubDomains; preload' })`) e submeter em hstspreload.org. É difícil de reverter.

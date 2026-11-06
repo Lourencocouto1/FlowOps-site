@@ -1,9 +1,12 @@
 ---
-// Só o "F" do símbolo, como elemento gráfico (marca de água, fundo do hero). Cor via currentColor.
+// Forma principal do símbolo (o "F"), como elemento gráfico: marca de água, fundo do hero. Cor via currentColor.
+// Vem de public/brand/mark.svg, gerado por scripts/build-brand.mjs a partir de public/brand/logo-source.svg.
+import mark from '../../../public/brand/mark.svg?raw';
+
 interface Props { class?: string }
 const { class: className = '' } = Astro.props;
+const svg = mark
+  .replace(/<title[^>]*>.*?<\/title>/, '')
+  .replace(/ role="img" aria-labelledby="t"/, ` class="${className}" aria-hidden="true" focusable="false"`);
 ---
-<svg class={className} viewBox="345 285 610 545" aria-hidden="true" focusable="false">
-  <path fill="currentColor" d="M590 297H916Q946 297 937 326L928 360C917 402 886 428 848 428H585C500 428 440 470 401 540L437 410C455 345 510 297 590 297Z" />
-  <path fill="currentColor" d="M392 655C425 540 495 484 585 484H812Q840 484 831 512L822 545C812 580 790 603 758 603H612C585 603 566 617 558 645L519 768C513 788 500 797 480 797H382Q352 797 360 768Z" />
-</svg>
+<Fragment set:html={svg} />

@@ -1,0 +1,11 @@
+---
+// Identificação dos titulares (trabalhadores independentes), a partir de site.config.mjs.
+// Campos vazios aparecem como [A CONFIRMAR].
+import { brand } from '../../lib/site';
+---
+{brand.owners.map((o, i) => (
+  <>
+    {i > 0 && (i === brand.owners.length - 1 ? ' e ' : ', ')}
+    <strong>{o.name}</strong> (NIF {o.nif || <span class="placeholder-confirm">A CONFIRMAR</span>})
+  </>
+))}

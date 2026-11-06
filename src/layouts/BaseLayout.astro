@@ -2,7 +2,10 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { getSettings } from '../lib/site';
+import { brand, getSettings } from '../lib/site';
+import { PUBLIC_UMAMI_HOST, PUBLIC_UMAMI_SRC, PUBLIC_UMAMI_WEBSITE_ID } from 'astro:env/client';
+import manrope from '@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url';
+import inter from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 
 interface Props {
   title?: string;
@@ -10,6 +13,8 @@ interface Props {
   /** Página legal ou secundária: cabeçalho simples, sem âncoras da página inicial. */
   minimal?: boolean;
   noindex?: boolean;
+  /** Imagem de partilha (caminho em public/). Por defeito, /og/default.png (gerada por npm run brand). */
+  image?: string;
 }
 
 const settings = await getSettings();
@@ -18,10 +23,40 @@ const {
   description = settings.description,
   minimal = false,
   noindex = false,
+  image = '/og/default.png',
 } = Astro.props;
-const fullTitle = title ? `${title} · FlowOps` : 'FlowOps · Software, websites e apps à medida em Lisboa';
-const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.site);
-// SEO completo (Open Graph, schema.org) entra na fase 5.
+const fullTitle = title ? `${title} · ${brand.name}` : `${brand.name} · Software, websites e apps à medida em ${brand.city}`;
+const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.site).href;
+const imageUrl = new URL(image, Astro.site).href;
+const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '';
+
+// schema.org: a marca comercial como Organization (sem dados de sociedade: são trabalhadores independentes).
+const sameAs = [settings.social.instagram, settings.social.linkedin].filter(Boolean);
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': `${brand.url}/#organizacao`,
+  name: brand.name,
+  url: `${brand.url}/`,
+  logo: `${brand.url}/icon-512.png`,
+  image: imageUrl,
+  description: settings.description,
+  address: { '@type': 'PostalAddress', addressLocality: brand.city, addressCountry: brand.countryCode },
+  areaServed: { '@type': 'Country', name: brand.country },
+  founder: brand.owners.map((o) => ({ '@type': 'Person', name: o.name })),
+  ...(settings.contacts.email && { email: settings.contacts.email }),
+  ...(sameAs.length && { sameAs }),
+};
+const website = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: brand.name,
+  url: `${brand.url}/`,
+  inLanguage: 'pt-PT',
+  publisher: { '@id': organization['@id'] },
+};
+const jsonLd = (data: object) => JSON.stringify(data).replace(/</g, '\\u003c');
+const analytics = PUBLIC_UMAMI_SRC && PUBLIC_UMAMI_WEBSITE_ID;
 ---
 <!doctype html>
 <html lang="pt-PT">
@@ -33,12 +68,45 @@ const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.si
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#0F1F1C" />
+    <link rel="preload" href={manrope} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={inter} as="font" type="font/woff2" crossorigin />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_PT" />
+    <meta property="og:site_name" content={brand.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${brand.name}: software, websites e apps à medida em ${brand.city}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+
+    {isHome && <script type="application/ld+json" set:html={jsonLd(organization)} />}
+    {isHome && <script type="application/ld+json" set:html={jsonLd(website)} />}
+
     <!-- Ativa o movimento antes do primeiro desenho, só se o utilizador não pediu movimento reduzido. -->
     <script is:inline>if (window.matchMedia && matchMedia('(prefers-reduced-motion: no-preference)').matches && 'IntersectionObserver' in window) document.documentElement.classList.add('motion');</script>
+    {/* Umami: estatísticas sem cookies. Só conta visitas no domínio de produção (data-domains). */}
+    {analytics && (
+      <script
+        is:inline
+        defer
+        src={PUBLIC_UMAMI_SRC}
+        data-website-id={PUBLIC_UMAMI_WEBSITE_ID}
+        data-domains={brand.domain}
+        data-host-url={PUBLIC_UMAMI_HOST}
+      />
+    )}
   </head>
   <body>
     <a href="#conteudo" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-ink focus:shadow-lg">Saltar para o conteúdo</a>

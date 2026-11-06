@@ -1,15 +1,21 @@
 ---
 import LegalLayout from '../layouts/LegalLayout.astro';
+import Owners from '../components/legal/Owners.astro';
+import Address from '../components/legal/Address.astro';
+import { brand, getSettings } from '../lib/site';
+const { contacts } = await getSettings();
 ---
 <LegalLayout
   title="Política de Privacidade"
-  description="Como a FlowOps recolhe, usa e protege os dados pessoais de quem a contacta através deste site."
+  description={`Como a equipa ${brand.name} recolhe, usa e protege os dados pessoais de quem a contacta através deste site.`}
   updated="[A CONFIRMAR: data de publicação]"
 >
-  <p class="rounded-lg bg-soft p-4 text-[0.92rem]"><strong>Rascunho.</strong> Este texto é uma base e deve ser revisto por um jurista antes da publicação. Os campos <span class="placeholder-confirm">A CONFIRMAR</span> dependem de dados da empresa.</p>
+  <p class="rounded-lg bg-soft p-4 text-[0.92rem]"><strong>Rascunho.</strong> Este texto é uma base e deve ser revisto por um jurista antes da publicação. Os campos <span class="placeholder-confirm">A CONFIRMAR</span> dependem de dados nossos (NIF, morada e contactos).</p>
 
-  <h2>1. Responsável pelo tratamento</h2>
-  <p>FlowOps <span class="placeholder-confirm">A CONFIRMAR: denominação legal, NIF e morada</span>, com sede em Lisboa. Contacto para questões de privacidade: <span class="placeholder-confirm">A CONFIRMAR: email</span>.</p>
+  <h2>1. Responsáveis pelo tratamento</h2>
+  <p>Os responsáveis pelo tratamento dos dados são <Owners />, trabalhadores independentes, que exercem a atividade com a marca comercial {brand.name}.</p>
+  <p>Tratam os dados em conjunto (responsáveis conjuntos, artigo 26.º do RGPD). Pode dirigir os seus pedidos a qualquer um deles, pelo contacto abaixo.</p>
+  <p>Morada: <Address />. Contacto para questões de privacidade: {contacts.email ? <a href={`mailto:${contacts.email}`}>{contacts.email}</a> : <span class="placeholder-confirm">A CONFIRMAR: email</span>}.</p>
 
   <h2>2. Que dados recolhemos</h2>
   <ul>
@@ -36,5 +42,5 @@ import LegalLayout from '../layouts/LegalLayout.astro';
   <p>Este site não usa cookies de publicidade nem de seguimento. Por isso não mostramos um aviso de cookies.</p>
 
   <h2>7. Os seus direitos</h2>
-  <p>Pode pedir acesso, retificação, apagamento, limitação, portabilidade ou opor-se ao tratamento dos seus dados, e retirar o consentimento a qualquer momento, escrevendo para <span class="placeholder-confirm">A CONFIRMAR: email</span>. Pode também apresentar reclamação à Comissão Nacional de Proteção de Dados (<a href="https://www.cnpd.pt" rel="noopener">cnpd.pt</a>).</p>
+  <p>Pode pedir acesso, retificação, apagamento, limitação, portabilidade ou opor-se ao tratamento dos seus dados, e retirar o consentimento a qualquer momento, escrevendo para {contacts.email ? <a href={`mailto:${contacts.email}`}>{contacts.email}</a> : <span class="placeholder-confirm">A CONFIRMAR: email</span>}. Pode também apresentar reclamação à Comissão Nacional de Proteção de Dados (<a href="https://www.cnpd.pt" rel="noopener">cnpd.pt</a>).</p>
 </LegalLayout>

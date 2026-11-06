@@ -101,7 +101,7 @@ export const POST: APIRoute = async ({ request, url, clientAddress }) => {
 // Qualquer outro método: 405.
 export const ALL: APIRoute = () => new Response('Método não permitido.', { status: 405, headers: { Allow: 'POST' } });
 
-const noStore = { 'Cache-Control': 'no-store' };
+const noStore = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
 
 async function verifyTurnstile(token: string, secret: string, ip: string) {
   try {

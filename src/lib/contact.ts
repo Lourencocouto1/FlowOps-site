@@ -1,5 +1,6 @@
 // Lógica do formulário de contacto, sem dependências do servidor (testável isoladamente).
 import { z } from 'astro/zod';
+import { BRAND_NAME } from '../../site.config.mjs';
 
 export const MAX_BODY_BYTES = 20_000;
 
@@ -44,7 +45,7 @@ const escapeHtml = (s: string) =>
 export function buildEmail(d: ContactData) {
   const subject = `Novo contacto pelo site: ${d.negocio}`.slice(0, 150);
   const textBody = [
-    'Novo pedido de contacto pelo site da FlowOps.',
+    `Novo pedido de contacto pelo site da ${BRAND_NAME}.`,
     '',
     `Nome: ${d.nome}`,
     `Negócio: ${d.negocio}`,
@@ -57,7 +58,7 @@ export function buildEmail(d: ContactData) {
   ].join('\n');
   const row = (k: string, v: string) => `<tr><td style="padding:4px 12px 4px 0;color:#4B5B57">${k}</td><td style="padding:4px 0"><strong>${escapeHtml(v)}</strong></td></tr>`;
   const html = `<div style="font-family:Arial,sans-serif;color:#0F1F1C;line-height:1.5">
-<p>Novo pedido de contacto pelo site da FlowOps.</p>
+<p>Novo pedido de contacto pelo site da ${BRAND_NAME}.</p>
 <table>${row('Nome', d.nome)}${row('Negócio', d.negocio)}${row('Telemóvel', d.telemovel)}</table>
 <p style="margin-top:16px;color:#4B5B57">Mensagem:</p>
 <p style="white-space:pre-wrap">${escapeHtml(d.mensagem)}</p>

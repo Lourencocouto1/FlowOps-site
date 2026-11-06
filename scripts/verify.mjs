@@ -7,7 +7,8 @@
 //   - scroll horizontal (nada pode sair da largura do ecrã)
 //   - áreas de toque < 44 × 44 px (exceto links dentro de texto corrido, exceção WCAG 2.5.8)
 //   - campos de formulário com letra < 16 px (zoom automático no iOS)
-//   - erros de JavaScript na consola
+//   - erros de JavaScript na consola (inclui violações da Content-Security-Policy)
+//   - cabeçalhos de segurança e meta tags de SEO em cada página; robots.txt, sitemap e manifest
 // Capturas de página inteira em screenshots/<motor>/.
 import { chromium, firefox, webkit, devices } from '@playwright/test';
 import { spawn } from 'node:child_process';
@@ -148,6 +149,7 @@ async function runForm(engineName, label, contextOptions) {
   const page = await context.newPage();
   const issues = [];
   page.on('pageerror', (e) => issues.push(`erro JS: ${e.message}`));
+  page.on('console', (m) => /Content Security Policy|Content-Security-Policy/i.test(m.text()) && issues.push(`CSP: ${m.text().slice(0, 200)}`));
   // Cada teste usa um "IP" próprio, para não esbarrar no limite de 5 pedidos por minuto.
   const ip = `10.9.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
   await page.route('**/api/contact', (route) => route.continue({ headers: { ...route.request().headers(), 'cf-connecting-ip': ip } }));
@@ -184,6 +186,46 @@ async function runForm(engineName, label, contextOptions) {
   await browser.close();
 }
 
+/** Corre dentro da página: meta tags essenciais de SEO e partilha. */
+function seoAudit() {
+  const issues = [];
+  const need = {
+    title: document.title,
+    description: document.querySelector('meta[name="description"]')?.getAttribute('content'),
+    canonical: document.querySelector('link[rel="canonical"]')?.getAttribute('href'),
+    'og:title': document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+    'og:image': document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+    'twitter:card': document.querySelector('meta[name="twitter:card"]')?.getAttribute('content'),
+  };
+  for (const [k, v] of Object.entries(need)) if (!v) issues.push(`SEO: falta ${k}`);
+  if (document.documentElement.lang !== 'pt-PT') issues.push('SEO: <html lang> não é pt-PT');
+  if (document.querySelectorAll('h1').length !== 1) issues.push(`SEO: ${document.querySelectorAll('h1').length} elementos h1 (esperado 1)`);
+  for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
+    try { JSON.parse(s.textContent ?? ''); } catch { issues.push('SEO: JSON-LD inválido'); }
+  }
+  return issues;
+}
+
+/** Ficheiros de SEO servidos pelo build. */
+async function checkSeoFiles() {
+  const issues = [];
+  const get = async (path) => {
+    const r = await fetch(`http://localhost:${port}${path}`);
+    if (!r.ok) issues.push(`${path}: HTTP ${r.status}`);
+    return r.ok ? r.text() : '';
+  };
+  const robots = await get('/robots.txt');
+  if (!/Sitemap: https?:\/\/\S+\/sitemap-index\.xml/.test(robots)) issues.push('robots.txt sem a linha Sitemap');
+  const sitemap = await get('/sitemap-0.xml');
+  if (/contacto\//.test(sitemap)) issues.push('sitemap inclui as páginas /contacto/ (devem ficar de fora)');
+  if (!/<loc>[^<]+<\/loc>/.test(sitemap)) issues.push('sitemap sem URLs');
+  try { JSON.parse(await get('/site.webmanifest')); } catch { issues.push('site.webmanifest não é JSON válido'); }
+  const og = await fetch(`http://localhost:${port}/og/default.png`);
+  if (!og.ok || !(og.headers.get('content-type') ?? '').includes('image/png')) issues.push('/og/default.png em falta');
+  report.push({ engine: 'http', label: 'ficheiros SEO', path: '/robots.txt, /sitemap, /site.webmanifest, /og', issues });
+  console.log(`${issues.length ? '✗' : '✓'} http     ficheiros SEO${issues.length ? '\n    - ' + issues.join('\n    - ') : ''}`);
+}
+
 const report = [];
 async function run(engineName, label, contextOptions) {
   if (skipped.has(engineName)) return;
@@ -201,9 +243,14 @@ async function run(engineName, label, contextOptions) {
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   for (const path of PAGES) {
-    await page.goto(`http://localhost:${port}${path}`, { waitUntil: 'networkidle' });
+    const response = await page.goto(`http://localhost:${port}${path}`, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
     const issues = await page.evaluate(audit);
+    const headers = response?.headers() ?? {};
+    for (const h of ['content-security-policy', 'strict-transport-security', 'x-content-type-options', 'referrer-policy']) {
+      if (!headers[h]) issues.push(`cabeçalho em falta: ${h}`);
+    }
+    issues.push(...(await page.evaluate(seoAudit)));
     // Menu do telemóvel: abre, mede, fecha (onde o botão estiver visível).
     const toggle = page.locator('[data-menu-toggle]');
     if (await toggle.isVisible()) {
@@ -227,6 +274,7 @@ async function run(engineName, label, contextOptions) {
 }
 
 try {
+  await checkSeoFiles();
   for (const engineName of Object.keys(engines)) {
     for (const [label, viewport] of widths) await run(engineName, label, { viewport });
   }

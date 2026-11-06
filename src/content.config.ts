@@ -7,11 +7,8 @@ const ordered = { order: z.number().int() };
 const settings = defineCollection({
   loader: file('src/content/settings.json'),
   schema: z.object({
-    name: z.string(),
-    tagline: z.string(),
+    // O nome, o domínio e a localidade estão em site.config.mjs. Nos textos, {marca} é trocado pelo nome.
     description: z.string(),
-    city: z.string(),
-    country: z.string(),
     contacts: z.object({
       whatsapp: z.string().regex(/^\d*$/, 'Só dígitos, com indicativo (ex.: 351912345678)'),
       email: z.union([z.email(), z.literal('')]),
