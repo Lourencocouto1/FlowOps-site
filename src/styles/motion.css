@@ -49,14 +49,6 @@
   }
   @keyframes reveal-failsafe { to { opacity: 1; transform: none; } }
 
-  /* --- Problemas: antes → depois ao entrar no ecrã --- */
-  .pb-icon { opacity: .8; transition: opacity .5s ease .1s, color .5s ease .1s, border-color .5s ease .1s; }
-  .pb-line { transform-origin: left center; transition: transform .7s ease .45s; }
-  .pb-check { transition: transform .45s cubic-bezier(.2, .9, .3, 1.3) 1s, opacity .3s ease 1s; }
-  .motion [data-problem]:not(.in) .pb-icon { opacity: 1; color: var(--color-ink); border-color: var(--color-ink); }
-  .motion [data-problem]:not(.in) .pb-line { transform: scaleX(0); }
-  .motion [data-problem]:not(.in) .pb-check { opacity: 0; transform: scale(.3); }
-
   /* --- Como trabalhamos: linha desenhada com o scroll --- */
   [data-flow-node] { transition: background-color .3s ease, border-color .3s ease, color .3s ease; }
   .motion [data-flow] [data-flow-node]:not(.lit) { background: var(--color-brand-strong); border-color: rgb(255 255 255 / .4); color: #fff; } /* 7,58 : 1 */

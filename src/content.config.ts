@@ -41,6 +41,8 @@ const problems = defineCollection({
   loader: file('src/content/problems.json'),
   schema: z.object({
     ...ordered,
+    /** Nome curto do problema (lista e botões do "antes → depois"). */
+    short: z.string(),
     icons: z.array(z.enum(['paper', 'clock', 'sheet', 'chat', 'browser-question', 'mail', 'phone'])).min(1).max(3),
     problem: z.string(),
     solution: z.string(),

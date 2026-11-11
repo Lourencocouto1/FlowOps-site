@@ -123,6 +123,64 @@ function initHero() {
   schedule();
 }
 
+// 4. Problemas, "antes → depois": escolher um problema mostra a cena desarrumada e, logo a seguir,
+// as peças arrumam-se. Os botões Antes/Depois deixam comparar à mão. Sem movimento, fica sempre o "depois"
+// (e os botões trocam sem animação).
+function initProblems() {
+  const root = document.querySelector<HTMLElement>('[data-pb]');
+  const stage = root?.querySelector<HTMLElement>('[data-pb-stage]');
+  if (!root || !stage) return;
+  const items = [...root.querySelectorAll<HTMLButtonElement>('[data-pb-item]')];
+  const scenes = [...root.querySelectorAll<HTMLElement>('[data-pb-scene]')];
+  const caps = [...root.querySelectorAll<HTMLElement>('[data-pb-cap]')];
+  const modes = [...root.querySelectorAll<HTMLButtonElement>('[data-pb-mode]')];
+  const TIDY_MS = 900;
+  let timer = 0;
+
+  const setBefore = (before: boolean) => {
+    stage.classList.toggle('is-before', before);
+    modes.forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.pbMode === 'before') === before)));
+  };
+  const play = (delay = TIDY_MS) => {
+    window.clearTimeout(timer);
+    if (!motion) return setBefore(false);
+    setBefore(true);
+    timer = window.setTimeout(() => setBefore(false), delay);
+  };
+  const select = (i: number) => {
+    items.forEach((b, n) => {
+      b.classList.toggle('is-active', n === i);
+      b.setAttribute('aria-pressed', String(n === i));
+    });
+    // A cena nova aparece já no "antes" (estava escondida, por isso não anima) e só depois se arruma.
+    scenes.forEach((s, n) => (s.hidden = n !== i));
+    caps.forEach((c, n) => (c.hidden = n !== i));
+    play();
+  };
+
+  items.forEach((b, n) => b.addEventListener('click', () => select(n)));
+  modes.forEach((b) =>
+    b.addEventListener('click', () => {
+      window.clearTimeout(timer);
+      setBefore(b.dataset.pbMode === 'before');
+    }),
+  );
+  if (!motion) return;
+
+  // Começa desarrumado e arruma-se na primeira vez que a secção aparece no ecrã.
+  setBefore(true);
+  const io = new IntersectionObserver(
+    ([entry]) => {
+      if (!entry?.isIntersecting) return;
+      io.disconnect();
+      play(TIDY_MS + 300);
+    },
+    { threshold: 0.45 },
+  );
+  io.observe(stage);
+}
+
 initReveal();
 initFlow();
 initHero();
+initProblems();
