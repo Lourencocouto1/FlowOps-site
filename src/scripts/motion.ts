@@ -63,20 +63,64 @@ function initFlow() {
   }).observe(flow);
 }
 
-// 3. Hero: botão de pausa (WCAG 2.2.2) e pausa automática quando sai do ecrã (poupa bateria).
+// 3. Hero: os 4 exemplos do telemóvel. Clicar num nome ou nas setas mostra esse exemplo; com movimento,
+// avançam sozinhos a cada 5 s (o primeiro espera pelo ecrã de abertura), com botão de pausa (WCAG 2.2.2)
+// e pausa automática quando o hero sai do ecrã (poupa bateria).
 function initHero() {
   const stage = document.querySelector<HTMLElement>('.hero-stage');
-  if (!stage || !motion) return;
+  if (!stage) return;
+  const scenes = [...stage.querySelectorAll<HTMLElement>('.mk-scene')];
+  const steps = [...stage.querySelectorAll<HTMLButtonElement>('[data-step]')];
   const btn = stage.querySelector<HTMLButtonElement>('[data-hero-pause]');
   const label = btn?.querySelector<HTMLElement>('[data-label]');
+  const STEP_MS = 5000;
+  const BOOT_MS = 2900; // igual a --boot em motion.css
+  let firstAt = performance.now() + BOOT_MS + STEP_MS; // primeira troca automática
+  let current = 0;
+  let timer = 0;
+  let paused = false;
+  let offscreen = false;
+
+  const show = (i: number) => {
+    current = (i + scenes.length) % scenes.length;
+    scenes.forEach((s, n) => s.classList.toggle('is-active', n === current));
+    steps.forEach((b, n) => {
+      b.classList.toggle('is-active', n === current);
+      b.setAttribute('aria-current', String(n === current));
+    });
+  };
+  const schedule = () => {
+    window.clearTimeout(timer);
+    if (!motion || paused || offscreen) return;
+    timer = window.setTimeout(() => {
+      show(current + 1);
+      schedule();
+    }, Math.max(STEP_MS, firstAt - performance.now()));
+  };
+  const go = (i: number) => {
+    firstAt = 0;
+    show(i);
+    schedule();
+  };
+
+  steps.forEach((b, n) => b.addEventListener('click', () => go(n)));
+  stage.querySelector('[data-prev]')?.addEventListener('click', () => go(current - 1));
+  stage.querySelector('[data-next]')?.addEventListener('click', () => go(current + 1));
+  if (!motion) return;
+
   btn?.addEventListener('click', () => {
-    const paused = stage.classList.toggle('is-paused');
+    paused = !paused;
+    stage.classList.toggle('is-paused', paused);
     btn.setAttribute('aria-pressed', String(paused));
     if (label) label.textContent = paused ? 'Retomar animação' : 'Pausar animação';
+    schedule();
   });
   new IntersectionObserver(([entry]) => {
-    stage.classList.toggle('is-offscreen', !entry?.isIntersecting);
+    offscreen = !entry?.isIntersecting;
+    stage.classList.toggle('is-offscreen', offscreen);
+    schedule();
   }).observe(stage);
+  schedule();
 }
 
 initReveal();
