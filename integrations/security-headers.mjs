@@ -5,7 +5,8 @@
 // Os cabeçalhos são aplicados pela Cloudflare (Workers Static Assets) a todos os ficheiros estáticos.
 // A resposta do /api/contact define os seus próprios cabeçalhos no código.
 import { createHash } from 'node:crypto';
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,9 +30,14 @@ async function htmlFiles(dir) {
  * @returns {import('astro').AstroIntegration}
  */
 export default function securityHeaders(options = {}) {
+  /** @type {URL} */
+  let projectRoot;
   return {
     name: 'flowops:security-headers',
     hooks: {
+      'astro:config:done': ({ config }) => {
+        projectRoot = config.root;
+      },
       'astro:build:done': async ({ dir, logger }) => {
         const root = fileURLToPath(dir);
         const files = await htmlFiles(root);
@@ -83,18 +89,24 @@ export default function securityHeaders(options = {}) {
           'Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()',
           'Cross-Origin-Opener-Policy: same-origin',
         ];
-        const block = (/** @type {string} */ path, /** @type {string[]} */ lines) => `${path}\n${lines.map((l) => `  ${l}`).join('\n')}\n`;
-        const content = [
-          '# Gerado por integrations/security-headers.mjs no build. Não editar à mão.',
-          block('/*', all),
-          // Ficheiros com hash no nome: cache longa. (O adaptador da Cloudflare não acrescenta outra regra.)
-          block('/_astro/*', ['Cache-Control: public, max-age=31536000, immutable']),
-          block('/brand/*', ['Cache-Control: public, max-age=86400']),
-          block('/og/*', ['Cache-Control: public, max-age=86400']),
-        ].join('\n');
+        const toObj = (/** @type {string[]} */ lines) =>
+          Object.fromEntries(lines.map((l) => [l.slice(0, l.indexOf(':')), l.slice(l.indexOf(':') + 1).trim()]));
+        // Regras na Build Output API da Vercel (.vercel/output/config.json), antes das rotas do adaptador.
+        // "continue: true" aplica os cabeçalhos e segue para a rota seguinte (ficheiro estático ou função).
+        const rules = [
+          { src: '/(.*)', headers: toObj(all), continue: true },
+          // /_astro/* (ficheiros com hash no nome) já recebe cache longa do adaptador.
+          { src: '/brand/(.*)', headers: { 'Cache-Control': 'public, max-age=86400' }, continue: true },
+          { src: '/og/(.*)', headers: { 'Cache-Control': 'public, max-age=86400' }, continue: true },
+        ];
 
-        await writeFile(join(root, '_headers'), content);
-        logger.info(`_headers escrito: ${files.length} páginas, ${hashes.size} script(s) inline com hash.`);
+        // O adaptador da Vercel corre antes (vem primeiro nas integrações) e já escreveu o config.json.
+        const configPath = fileURLToPath(new URL('.vercel/output/config.json', projectRoot));
+        if (!existsSync(configPath)) throw new Error(`security-headers: não encontrei ${configPath} (o adaptador é o da Vercel?)`);
+        const config = JSON.parse(readFileSync(configPath, 'utf8'));
+        config.routes = [...rules, ...(config.routes ?? [])];
+        writeFileSync(configPath, JSON.stringify(config, null, 2));
+        logger.info(`Cabeçalhos escritos: ${files.length} páginas, ${hashes.size} script(s) inline com hash.`);
       },
     },
   };

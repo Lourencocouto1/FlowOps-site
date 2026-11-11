@@ -3,7 +3,7 @@ import { defineConfig, envField } from 'astro/config';
 import { loadEnv } from 'vite';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
-import cloudflare from '@astrojs/cloudflare';
+import vercel from '@astrojs/vercel';
 import securityHeaders from './integrations/security-headers.mjs';
 import { siteUrl } from './site.config.mjs';
 
@@ -15,10 +15,8 @@ export default defineConfig({
   site: siteUrl(env.PUBLIC_SITE_URL),
   trailingSlash: 'never',
   build: { format: 'file' },
-  // Site estático; só /api/contact corre no servidor (Cloudflare Workers).
-  adapter: cloudflare({ imageService: 'compile' }),
-  // O site não usa sessões: sem isto, o adaptador cria um KV "SESSION" no deploy.
-  session: false,
+  // Site estático; só /api/contact corre no servidor (Vercel Functions).
+  adapter: vercel(),
   integrations: [
     sitemap({ filter: (page) => !page.includes('/contacto/') }),
     securityHeaders({ analyticsSrc: env.PUBLIC_UMAMI_SRC, analyticsHost: env.PUBLIC_UMAMI_HOST }),
