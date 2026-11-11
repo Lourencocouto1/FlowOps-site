@@ -1,8 +1,8 @@
 // @ts-check
-// Integração local: no fim do build escreve dist/client/_headers com os cabeçalhos de segurança.
+// Integração local: no fim do build junta os cabeçalhos de segurança a .vercel/output/config.json.
 // A Content-Security-Policy é calculada a partir do HTML gerado: cada <script> inline recebe o seu hash
 // sha256, por isso a política fica sempre certa sem ser preciso mantê-la à mão.
-// Os cabeçalhos são aplicados pela Cloudflare (Workers Static Assets) a todos os ficheiros estáticos.
+// Os cabeçalhos são aplicados pela Vercel (rotas da Build Output API) a todas as respostas.
 // A resposta do /api/contact define os seus próprios cabeçalhos no código.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';

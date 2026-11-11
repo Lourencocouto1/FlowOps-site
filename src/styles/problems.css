@@ -55,7 +55,7 @@
     background: #fff;
   }
   .pb-modes button {
-    min-height: 36px;
+    min-height: 44px; /* área de toque mínima (WCAG 2.5.5) */
     padding: 0 18px;
     border-radius: 999px;
     color: var(--color-muted);

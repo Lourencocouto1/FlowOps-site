@@ -98,7 +98,7 @@
   @media (max-width: 1023px) { .hero-f { left: 50%; translate: -50% 0; top: 5%; width: min(118%, 420px); } }
   .hero-controls { display: grid; justify-items: center; gap: 10px; }
   .hero-steps { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 6px; font-size: 0.82rem; font-weight: 600; color: var(--color-on-dark); }
-  .hero-steps button { padding: 6px 6px 5px; border-bottom: 2px solid transparent; cursor: pointer; transition: color .2s, border-color .2s; }
+  .hero-steps button { display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; border-bottom: 2px solid transparent; cursor: pointer; transition: color .2s, border-color .2s; }
   .hero-steps button:hover { color: #fff; }
   .hero-steps button.is-active { color: #fff; border-color: var(--color-aqua); }
   .hero-buttons { display: flex; align-items: center; gap: 10px; }

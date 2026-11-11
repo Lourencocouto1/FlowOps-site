@@ -17,7 +17,7 @@ npm run dev               # http://localhost:4321
 |---|---|
 | `npm run dev` | Servidor de desenvolvimento |
 | `npm run build` | Gera o site em `dist/` |
-| `npm run preview` | Serve o build localmente |
+| `npm run preview` | Serve o build localmente, como na Vercel (`scripts/serve-vercel.mjs`, porta 4321) |
 | `npm run check` | Verifica tipos e conteúdos |
 | `npm run brand` | Gera todos os ficheiros da marca (logótipos, favicon, ícones, imagem Open Graph) a partir de `public/brand/logo-source.svg` |
 | `npm run verify` | Verificação em Chromium, WebKit (Safari) e Firefox: 320, 375, 768, 1024, 1280, 1440, 1920 px, telemóvel na horizontal, iPhone, iPad e Android. Mede scroll horizontal, áreas de toque < 44 px, campos < 16 px, erros de JavaScript e violações da CSP, cabeçalhos de segurança, meta tags de SEO, `robots.txt`, sitemap e manifest; faz uma passagem com movimento ativo e testa o formulário. Capturas em `screenshots/` (precisa de `npx playwright install chromium firefox webkit`) |
@@ -107,7 +107,7 @@ Com JavaScript, o formulário mostra os erros junto a cada campo e a confirmaç�
 3. Na Vercel (Settings → Environment Variables), definir `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `TURNSTILE_SECRET_KEY` (secretos) e `PUBLIC_TURNSTILE_SITE_KEY`. Remover `CONTACT_DRY_RUN` ou pô-lo a `false`.
 4. A `PUBLIC_TURNSTILE_SITE_KEY` entra no build: depois de a definir, publicar de novo.
 
-Localmente, o `npm run build` copia o `.env` para `dist/server/.dev.vars`, que é usado pelo `npm run preview`. Depois de mudar o `.env`, volte a fazer build. Esse ficheiro não é enviado no deploy.
+Localmente, o `npm run preview` lê o `.env` ao arrancar. As variáveis `PUBLIC_*` entram no build: depois de as mudar, volte a fazer build.
 
 ## Marca
 

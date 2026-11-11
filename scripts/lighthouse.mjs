@@ -1,11 +1,11 @@
-// Relatório Lighthouse (telemóvel e computador) a partir do build em dist/.
+// Relatório Lighthouse (telemóvel e computador) a partir do build em .vercel/output/ (servidor local em scripts/serve-vercel.mjs).
 //   npm run build && npm run lighthouse
 // Usa o Chromium do Playwright. Guarda os relatórios em docs/lighthouse/ (HTML para abrir no browser, JSON para comparar).
 // Telemóvel: as condições por defeito do Lighthouse (ecrã de telemóvel, rede 4G lenta e CPU 4x mais lento, simulados).
 // Cada página corre RUNS vezes (por defeito 3) e conta a mediana da performance, como recomenda o Lighthouse.
 // Antes, uma corrida de aquecimento: a 1.ª página num Chrome acabado de abrir inclui o arranque do próprio browser.
 import { chromium } from '@playwright/test';
-import { spawn } from 'node:child_process';
+import { serveVercel } from './serve-vercel.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import lighthouse from 'lighthouse';
 import desktopConfig from 'lighthouse/core/config/desktop-config.js';
@@ -18,13 +18,7 @@ const RUNS = Number(process.env.RUNS || 3);
 const out = 'docs/lighthouse';
 const categories = ['performance', 'accessibility', 'best-practices', 'seo'];
 
-spawn('npx', ['astro', 'preview', 'stop'], { stdio: 'ignore' });
-await new Promise((r) => setTimeout(r, 800));
-const server = spawn('npx', ['astro', 'preview', '--port', String(port)], { stdio: 'ignore' });
-for (let i = 0; i < 60; i++) {
-  try { if ((await fetch(`http://localhost:${port}/`)).ok) break; } catch {}
-  await new Promise((r) => setTimeout(r, 500));
-}
+const server = await serveVercel(port);
 
 const chrome = await chromeLauncher.launch({ chromePath: chromium.executablePath(), chromeFlags: ['--headless=new'] });
 const rows = [];
@@ -67,8 +61,7 @@ try {
   }
 } finally {
   chrome.kill();
-  server.kill();
-  spawn('npx', ['astro', 'preview', 'stop'], { stdio: 'ignore' });
+  server.close();
 }
 
 console.table(rows);
@@ -77,6 +70,6 @@ const md = [
   '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ...rows.map((r) => `| ${r.mode} | ${r.path} | ${r.performance} | ${r.runs} | ${r.accessibility} | ${r['best-practices']} | ${r.seo} | ${r.LCP} | ${r.CLS} | ${r.TBT} |`),
 ].join('\n');
-await writeFile(`${out}/resumo.md`, `# Lighthouse ${new Date().toISOString().slice(0, 10)}\n\nBuild local (astro preview, runtime da Cloudflare, sem compressão: em produção a Cloudflare comprime o HTML e o CSS). ${RUNS} corridas por página, conta a mediana da performance. Mínimo pedido: ${MIN}.\n\n${md}\n`);
+await writeFile(`${out}/resumo.md`, `# Lighthouse ${new Date().toISOString().slice(0, 10)}\n\nBuild local (scripts/serve-vercel.mjs, sem compressão: em produção a Vercel comprime o HTML e o CSS). ${RUNS} corridas por página, conta a mediana da performance. Mínimo pedido: ${MIN}.\n\n${md}\n`);
 console.log(`\nRelatórios em ${out}/. ${failed ? `Há categorias abaixo de ${MIN}.` : `Todas as categorias ≥ ${MIN}.`}`);
 process.exitCode = failed ? 1 : 0;
