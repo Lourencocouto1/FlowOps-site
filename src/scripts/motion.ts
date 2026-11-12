@@ -63,22 +63,124 @@ function initFlow() {
   }).observe(flow);
 }
 
-// 3. Hero: botão de pausa (WCAG 2.2.2) e pausa automática quando sai do ecrã (poupa bateria).
+// 3. Hero: os 4 exemplos do telemóvel. Clicar num nome ou nas setas mostra esse exemplo; com movimento,
+// avançam sozinhos a cada 5 s (o primeiro espera pelo ecrã de abertura), com botão de pausa (WCAG 2.2.2)
+// e pausa automática quando o hero sai do ecrã (poupa bateria).
 function initHero() {
   const stage = document.querySelector<HTMLElement>('.hero-stage');
-  if (!stage || !motion) return;
+  if (!stage) return;
+  const scenes = [...stage.querySelectorAll<HTMLElement>('.mk-scene')];
+  const steps = [...stage.querySelectorAll<HTMLButtonElement>('[data-step]')];
   const btn = stage.querySelector<HTMLButtonElement>('[data-hero-pause]');
   const label = btn?.querySelector<HTMLElement>('[data-label]');
+  const STEP_MS = 5000;
+  const BOOT_MS = 2900; // igual a --boot em motion.css
+  let firstAt = performance.now() + BOOT_MS + STEP_MS; // primeira troca automática
+  let current = 0;
+  let timer = 0;
+  let paused = false;
+  let offscreen = false;
+
+  const show = (i: number) => {
+    current = (i + scenes.length) % scenes.length;
+    scenes.forEach((s, n) => s.classList.toggle('is-active', n === current));
+    steps.forEach((b, n) => {
+      b.classList.toggle('is-active', n === current);
+      b.setAttribute('aria-current', String(n === current));
+    });
+  };
+  const schedule = () => {
+    window.clearTimeout(timer);
+    if (!motion || paused || offscreen) return;
+    timer = window.setTimeout(() => {
+      show(current + 1);
+      schedule();
+    }, Math.max(STEP_MS, firstAt - performance.now()));
+  };
+  const go = (i: number) => {
+    firstAt = 0;
+    show(i);
+    schedule();
+  };
+
+  steps.forEach((b, n) => b.addEventListener('click', () => go(n)));
+  stage.querySelector('[data-prev]')?.addEventListener('click', () => go(current - 1));
+  stage.querySelector('[data-next]')?.addEventListener('click', () => go(current + 1));
+  if (!motion) return;
+
   btn?.addEventListener('click', () => {
-    const paused = stage.classList.toggle('is-paused');
+    paused = !paused;
+    stage.classList.toggle('is-paused', paused);
     btn.setAttribute('aria-pressed', String(paused));
     if (label) label.textContent = paused ? 'Retomar animação' : 'Pausar animação';
+    schedule();
   });
   new IntersectionObserver(([entry]) => {
-    stage.classList.toggle('is-offscreen', !entry?.isIntersecting);
+    offscreen = !entry?.isIntersecting;
+    stage.classList.toggle('is-offscreen', offscreen);
+    schedule();
   }).observe(stage);
+  schedule();
+}
+
+// 4. Problemas, "antes → depois": escolher um problema mostra a cena desarrumada e, logo a seguir,
+// as peças arrumam-se. Os botões Antes/Depois deixam comparar à mão. Sem movimento, fica sempre o "depois"
+// (e os botões trocam sem animação).
+function initProblems() {
+  const root = document.querySelector<HTMLElement>('[data-pb]');
+  const stage = root?.querySelector<HTMLElement>('[data-pb-stage]');
+  if (!root || !stage) return;
+  const items = [...root.querySelectorAll<HTMLButtonElement>('[data-pb-item]')];
+  const scenes = [...root.querySelectorAll<HTMLElement>('[data-pb-scene]')];
+  const caps = [...root.querySelectorAll<HTMLElement>('[data-pb-cap]')];
+  const modes = [...root.querySelectorAll<HTMLButtonElement>('[data-pb-mode]')];
+  const TIDY_MS = 900;
+  let timer = 0;
+
+  const setBefore = (before: boolean) => {
+    stage.classList.toggle('is-before', before);
+    modes.forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.pbMode === 'before') === before)));
+  };
+  const play = (delay = TIDY_MS) => {
+    window.clearTimeout(timer);
+    if (!motion) return setBefore(false);
+    setBefore(true);
+    timer = window.setTimeout(() => setBefore(false), delay);
+  };
+  const select = (i: number) => {
+    items.forEach((b, n) => {
+      b.classList.toggle('is-active', n === i);
+      b.setAttribute('aria-pressed', String(n === i));
+    });
+    // A cena nova aparece já no "antes" (estava escondida, por isso não anima) e só depois se arruma.
+    scenes.forEach((s, n) => (s.hidden = n !== i));
+    caps.forEach((c, n) => (c.hidden = n !== i));
+    play();
+  };
+
+  items.forEach((b, n) => b.addEventListener('click', () => select(n)));
+  modes.forEach((b) =>
+    b.addEventListener('click', () => {
+      window.clearTimeout(timer);
+      setBefore(b.dataset.pbMode === 'before');
+    }),
+  );
+  if (!motion) return;
+
+  // Começa desarrumado e arruma-se na primeira vez que a secção aparece no ecrã.
+  setBefore(true);
+  const io = new IntersectionObserver(
+    ([entry]) => {
+      if (!entry?.isIntersecting) return;
+      io.disconnect();
+      play(TIDY_MS + 300);
+    },
+    { threshold: 0.45 },
+  );
+  io.observe(stage);
 }
 
 initReveal();
 initFlow();
 initHero();
+initProblems();

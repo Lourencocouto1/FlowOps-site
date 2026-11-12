@@ -28,3 +28,6 @@ docs/lighthouse/*
 !docs/lighthouse/resumo.md
 !docs/lighthouse/telemovel-inicio.html
 !docs/lighthouse/computador-inicio.html
+
+# saída do build da Vercel e ligação local ao projeto
+.vercel/

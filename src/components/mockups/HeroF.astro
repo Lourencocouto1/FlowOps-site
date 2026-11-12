@@ -1,0 +1,198 @@
+---
+// "F" grande do hero com animação de entrada: partículas ligadas por linhas (como a rede do vídeo de
+// fundo) juntam-se na forma do F; depois o F completa-se (sólido), os pontos desaparecem e uma faixa de
+// luz passa pelo F de tempos a tempos. Sem JavaScript ou com "reduzir movimento", fica o F sólido parado.
+import BrandF from '../ui/BrandF.astro';
+---
+<div class="hero-f" data-hero-f aria-hidden="true">
+  <BrandF class="hero-f-svg" />
+  <canvas class="hero-f-canvas"></canvas>
+</div>
+
+<script>
+  type P = { tx: number; ty: number; sx: number; sy: number; delay: number; phase: number; r: number; bright: boolean };
+
+  const ENTER = 1.3; // duração da viagem de cada partícula (s)
+  const SETTLE = 2.1; // a partir daqui o F completa-se (preenchimento sólido) e os pontos desaparecem
+  const FILL = 0.8; // duração dessa passagem (s)
+  const SWEEP = 4.5; // depois, intervalo entre passagens da faixa de luz sobre o F (s)
+
+  const root = document.querySelector<HTMLElement>('[data-hero-f]');
+  if (root && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) start(root);
+
+  function start(root: HTMLElement) {
+    const svg = root.querySelector('svg');
+    const canvas = root.querySelector('canvas');
+    const ctx = canvas?.getContext('2d');
+    if (!svg || !canvas || !ctx) return;
+    const stage = root.closest('.hero-stage');
+
+    // Forma do F a partir do próprio SVG (caminhos + transformações dos grupos).
+    const vb = svg.viewBox.baseVal;
+    const shape = new Path2D();
+    svg.querySelectorAll('path').forEach((p) => {
+      const m = (p.parentNode as SVGGElement).transform.baseVal.consolidate()?.matrix;
+      shape.addPath(new Path2D(p.getAttribute('d') ?? ''), m ? DOMMatrix.fromMatrix(m) : undefined);
+    });
+
+    const particles = sample();
+    const color = getComputedStyle(root).color;
+    let W = 0;
+    let H = 0;
+    let dpr = 1;
+
+    function sample(): P[] {
+      const w = 240;
+      const h = Math.round((w * vb.height) / vb.width);
+      const off = document.createElement('canvas');
+      off.width = w;
+      off.height = h;
+      const o = off.getContext('2d', { willReadFrequently: true });
+      if (!o) return [];
+      o.setTransform(w / vb.width, 0, 0, h / vb.height, (-vb.x * w) / vb.width, (-vb.y * h) / vb.height);
+      o.fill(shape);
+      const data = o.getImageData(0, 0, w, h).data;
+      const out: P[] = [];
+      const step = 8;
+      for (let y = step / 2; y < h; y += step) {
+        for (let x = step / 2; x < w; x += step) {
+          const jx = Math.min(w - 1, Math.max(0, Math.round(x + (Math.random() - 0.5) * 5)));
+          const jy = Math.min(h - 1, Math.max(0, Math.round(y + (Math.random() - 0.5) * 5)));
+          if (data[(jy * w + jx) * 4 + 3] < 128) continue;
+          const tx = jx / w;
+          const ty = jy / h;
+          out.push({
+            tx,
+            ty,
+            sx: tx + (Math.random() - 0.2) * 0.9,
+            sy: ty + (Math.random() - 0.5) * 0.9,
+            // Varre de baixo-esquerda para cima-direita, como o traço do F.
+            delay: 0.1 + tx * 0.45 + (1 - ty) * 0.2 + Math.random() * 0.3,
+            phase: Math.random() * Math.PI * 2,
+            r: 1.2 + Math.random() * 1.3,
+            bright: Math.random() < 0.12,
+          });
+        }
+      }
+      return out;
+    }
+
+    function resize() {
+      const box = root.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = box.width;
+      H = box.height;
+      canvas!.width = Math.round(W * dpr);
+      canvas!.height = Math.round(H * dpr);
+    }
+
+    const clamp = (v: number) => Math.min(1, Math.max(0, v));
+    const ease = (k: number) => 1 - Math.pow(1 - k, 3);
+
+    function draw(t: number) {
+      const c = ctx!;
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      c.clearRect(0, 0, W, H);
+      const formed = ease(clamp((t - SETTLE) / FILL));
+      const fade = 1 - formed; // pontos e linhas desaparecem enquanto o F se completa
+
+      // O F completa-se: preenchimento sólido, igual ao SVG.
+      if (formed > 0) {
+        c.save();
+        c.setTransform((W / vb.width) * dpr, 0, 0, (H / vb.height) * dpr, (-vb.x * W * dpr) / vb.width, (-vb.y * H * dpr) / vb.height);
+        c.fillStyle = color;
+        c.globalAlpha = formed;
+        c.fill(shape);
+        // Faixa de luz que atravessa o F de tempos a tempos (começa quando o F está completo).
+        const since = t - SETTLE - FILL;
+        if (since > 0) {
+          const cycle = (since % SWEEP) / SWEEP;
+          const bx = vb.x + (cycle * 1.8 - 0.4) * vb.width;
+          const g = c.createLinearGradient(bx - vb.width * 0.15, vb.y, bx + vb.width * 0.15, vb.y + vb.height * 0.3);
+          g.addColorStop(0, 'rgba(236,255,251,0)');
+          g.addColorStop(0.5, 'rgba(236,255,251,0.5)');
+          g.addColorStop(1, 'rgba(236,255,251,0)');
+          c.globalAlpha = 1;
+          c.fillStyle = g;
+          c.fill(shape);
+        }
+        c.restore();
+      }
+      if (!fade) return;
+
+      // Posições atuais.
+      const amp = 0;
+      const xs = new Float32Array(particles.length);
+      const ys = new Float32Array(particles.length);
+      const as = new Float32Array(particles.length);
+      particles.forEach((p, i) => {
+        const k = clamp((t - p.delay) / ENTER);
+        const e = ease(k);
+        xs[i] = (p.sx + (p.tx - p.sx) * e) * W + Math.sin(t * 0.9 + p.phase) * amp;
+        ys[i] = (p.sy + (p.ty - p.sy) * e) * H + Math.cos(t * 0.7 + p.phase * 1.3) * amp;
+        as[i] = clamp(k * 3) * fade;
+      });
+
+      // Linhas entre partículas próximas.
+      const maxD = W * 0.07;
+      const maxD2 = maxD * maxD;
+      c.strokeStyle = color;
+      c.lineWidth = 0.8;
+      for (let i = 0; i < particles.length; i++) {
+        if (!as[i]) continue;
+        for (let j = i + 1; j < particles.length; j++) {
+          if (!as[j]) continue;
+          const dx = xs[i] - xs[j];
+          const dy = ys[i] - ys[j];
+          const d2 = dx * dx + dy * dy;
+          if (d2 > maxD2) continue;
+          c.globalAlpha = (1 - Math.sqrt(d2) / maxD) * 0.45 * Math.min(as[i], as[j]);
+          c.beginPath();
+          c.moveTo(xs[i], ys[i]);
+          c.lineTo(xs[j], ys[j]);
+          c.stroke();
+        }
+      }
+
+      // Pontos (alguns mais claros, a cintilar).
+      particles.forEach((p, i) => {
+        if (!as[i]) return;
+        c.globalAlpha = as[i] * (p.bright ? 0.75 + 0.25 * Math.sin(t * 3 + p.phase) : 0.85);
+        c.fillStyle = p.bright ? '#ecfffb' : color;
+        c.beginPath();
+        c.arc(xs[i], ys[i], p.bright ? p.r + 0.6 : p.r, 0, Math.PI * 2);
+        c.fill();
+      });
+      c.globalAlpha = 1;
+    }
+
+    // Relógio próprio: só avança com o hero visível e sem pausa (botão de pausa do hero).
+    let clock = 0;
+    let last = 0;
+    let visible = true;
+    let raf = 0;
+    function frame(now: number) {
+      const dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
+      last = now;
+      if (!stage?.classList.contains('is-paused')) clock += dt;
+      draw(clock);
+      raf = visible ? requestAnimationFrame(frame) : 0;
+    }
+
+    resize();
+    const sizes = new ResizeObserver(() => {
+      resize();
+      draw(clock);
+    });
+    sizes.observe(root);
+    const seen = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible && !raf) {
+        last = 0;
+        raf = requestAnimationFrame(frame);
+      }
+    });
+    seen.observe(root);
+    root.classList.add('is-live');
+  }
+</script>

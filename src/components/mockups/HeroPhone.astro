@@ -1,70 +1,160 @@
 ---
-// Telemóvel do hero com 4 ecrãs de exemplo (empresas fictícias).
-// Fase 2: mostra o primeiro ecrã. Fase 3: os ecrãs passam em ciclo.
-import Icon from '../ui/Icon.astro';
+// Telemóvel do hero com 4 exemplos (website, marcações, gestão, automatizações), em ciclo (ver motion.css).
+// Estilo de app nativa: título grande, listas agrupadas com separadores, um só acento. Sem marcas
+// nem pessoas inventadas: cada exemplo é identificado pelo tipo de negócio. Estilos: hp-* em mockups.css.
+import HeroF from './HeroF.astro';
 import BrandF from '../ui/BrandF.astro';
+
+// Ícones de traço (24x24).
+const I: Record<string, string> = {
+  home: '<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  cal: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  list: '<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
+  bolt: '<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
+  bell: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+  chat: '<path d="M4 5h16v11H9l-5 4z"/>',
+  cog: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  fwd: '<path d="M9 5l7 7-7 7"/>',
+  share: '<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v9h12v-9"/>',
+  book: '<path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1z"/><path d="M12 6v14"/>',
+  tabs: '<rect x="4" y="7" width="13" height="13" rx="2"/><path d="M8 4h10a2 2 0 0 1 2 2v10"/>',
+  lock: '<rect x="6" y="11" width="12" height="9" rx="2"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  chev: '<path d="M10 6l6 6-6 6"/>',
+};
+const tabs: Record<string, [string, string][]> = {
+  booking: [['home', 'Início'], ['cal', 'Marcações'], ['chat', 'Mensagens'], ['user', 'Conta']],
+  dashboard: [['chart', 'Resumo'], ['list', 'Viaturas'], ['bell', 'Avisos'], ['cog', 'Ajustes']],
+  automation: [['bolt', 'Automações'], ['list', 'Histórico'], ['bell', 'Avisos'], ['cog', 'Ajustes']],
+};
+const active: Record<string, number> = { booking: 1, dashboard: 0, automation: 0 };
+
+// Calendário: novembro de 2026, segunda e terça semanas (hoje é dia 11).
+const weeks = [[2, 3, 4, 5, 6, 7, 8], [9, 10, 11, 12, 13, 14, 15]];
+const bars = [38, 52, 30, 0, 0, 0, 0]; // faturação por dia, seg a dom (só até hoje)
 ---
 <div class="hero-stage">
-  <BrandF class="hero-stage-f" />
-  <div class="mk-phone hero-phone" role="img" aria-label="Exemplos de soluções: o website de uma padaria, uma marcação confirmada numa clínica, o painel de gestão de uma oficina e tarefas feitas automaticamente, como lembretes e faturas enviadas.">
+  <HeroF />
+  <div class="mk-phone hero-phone" role="img" aria-label="Exemplos de soluções: o website de uma empresa de remodelações com pedido de orçamento, a marcação de uma sessão de fisioterapia, o resumo do dia de uma oficina e automatizações como avisos por SMS e faturas enviadas.">
     <div class="mk-screen" aria-hidden="true">
-      <div class="mk-scene is-active" data-scene="website">
-        <div class="mk-top"><b>Padaria Lumen</b><Icon name="menu" class="size-[18px]" /></div>
-        <div class="mk-site-hero">
-          <div class="mk-shapes"><i></i><i></i><i></i></div>
-          <b>Encomende hoje, levante amanhã a partir das 7h.</b>
-          <span class="mk-btn mk-btn-block">Fazer encomenda</span>
+      <!-- Os 4 ecrãs têm de ser os primeiros filhos: motion.css desfasa-os com :nth-child. -->
+
+      <!-- 1. Website no browser -->
+      <div class="mk-scene hp-scene hp-web is-active" data-scene="website">
+        <div class="hp-url"><svg viewBox="0 0 24 24" set:html={I.lock} />remodelacoes-lisboa.pt</div>
+        <div class="hp-page">
+          <div class="hp-nav"><b>Remodelações</b><svg viewBox="0 0 24 24" set:html={I.menu} /></div>
+          <p class="hp-sub">Cozinhas e casas de banho em Lisboa. Visita e orçamento sem compromisso; respondemos no mesmo dia útil.</p>
+          <div class="hp-group">
+            <div class="hp-row"><span>Tipo de obra</span><em>Cozinha</em><svg viewBox="0 0 24 24" set:html={I.chev} /></div>
+            <div class="hp-row"><span>Área aproximada</span><em>12 m²</em><svg viewBox="0 0 24 24" set:html={I.chev} /></div>
+            <div class="hp-row"><span>Quando</span><em>Próximo mês</em><svg viewBox="0 0 24 24" set:html={I.chev} /></div>
+          </div>
+          <span class="hp-btn">Pedir orçamento</span>
+          <p class="hp-label">Obras recentes</p>
+          <div class="hp-group">
+            <div class="hp-row"><span>Cozinha em Alvalade</span><em>3 semanas</em></div>
+            <div class="hp-row"><span>Casa de banho em Benfica</span><em>9 dias</em></div>
+          </div>
+          <p class="hp-label">Atendimento</p>
+          <div class="hp-group">
+            <div class="hp-row"><span>Seg. a sex.</span><em>9h às 18h</em></div>
+          </div>
         </div>
-        <div class="mk-list">
-          <div>Pão de centeio<span>2,40 €</span></div>
-          <div>Broa de milho<span>1,90 €</span></div>
-          <div>Croissant<span>1,30 €</span></div>
-        </div>
+        <nav class="hp-safari"><svg viewBox="0 0 24 24" set:html={I.back} /><svg viewBox="0 0 24 24" set:html={I.fwd} /><svg viewBox="0 0 24 24" set:html={I.share} /><svg viewBox="0 0 24 24" set:html={I.book} /><svg viewBox="0 0 24 24" set:html={I.tabs} /></nav>
       </div>
 
-      <div class="mk-scene" data-scene="booking">
-        <div class="mk-top"><b>Clínica Vértice</b><small>Fisioterapia</small></div>
-        <div class="mk-service"><div><b>Sessão de fisioterapia</b><small>50 min</small></div><span class="mk-tick"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span></div>
-        <div class="mk-day">Quinta-feira, 12 de novembro</div>
-        <div class="mk-slots">
-          <span class="busy">09:00</span><span>10:00</span><span class="busy">11:00</span>
-          <span class="picked">14:00</span><span class="busy">15:00</span><span>16:00</span>
+      <!-- 2. Marcações -->
+      <div class="mk-scene hp-scene" data-scene="booking">
+        <p class="hp-title">Marcar sessão</p>
+        <div class="hp-group">
+          <div class="hp-row"><span>Fisioterapia, 50 min</span><em>35 €</em></div>
         </div>
-        <div class="mk-confirmed"><span class="mk-ok"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span>Marcação confirmada</div>
+        <div class="hp-cal">
+          <div class="hp-cal-head"><b>novembro 2026</b><span><svg viewBox="0 0 24 24" set:html={I.back} /><svg viewBox="0 0 24 24" set:html={I.fwd} /></span></div>
+          <div class="hp-cal-grid">
+            {['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((d) => <small>{d}</small>)}
+            {weeks.flat().map((d) => <span class:list={[d <= 10 && 'past', d === 12 && 'on', (d === 14 || d === 15 || d === 8 || d === 7) && 'off']}>{d}</span>)}
+          </div>
+        </div>
+        <p class="hp-label">Quinta-feira, 12</p>
+        <div class="hp-times"><span>09:00</span><span>10:30</span><span class="on">14:00</span><span>16:30</span></div>
+        <span class="hp-btn">Confirmar quinta às 14:00</span>
+        <p class="hp-note">Recebe um lembrete por SMS na véspera. Pode remarcar até 24 horas antes.</p>
+        <nav class="hp-tabs">{tabs.booking.map(([k, l], n) => <span class:list={[n === active.booking && 'on']}><svg viewBox="0 0 24 24" set:html={I[k]} />{l}</span>)}</nav>
       </div>
 
-      <div class="mk-scene" data-scene="dashboard">
-        <div class="mk-top"><b>Oficina Nortecar</b><small>Hoje</small></div>
-        <div class="mk-tiles"><div><b>7</b><span>Reparações em curso</span></div><div><b>3</b><span>Prontas a entregar</span></div></div>
-        <div class="mk-bars"><i style="height:40%"></i><i style="height:65%"></i><i style="height:50%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:90%"></i></div>
-        <div class="mk-bars-legend"><span>seg</span><span>dom</span></div>
-        <div class="mk-rows">
-          <div>Utilitário · R. Silva<span class="mk-pill ok">Pronto</span></div>
-          <div>Ligeiro · M. Lopes<span class="mk-pill wip">Em curso</span></div>
-          <div>Ligeiro · J. Pinto<span class="mk-pill wip">Em curso</span></div>
+      <!-- 3. Gestão -->
+      <div class="mk-scene hp-scene" data-scene="dashboard">
+        <div class="hp-title-row"><p class="hp-title">Oficina</p><small>quarta, 11 nov</small></div>
+        <div class="hp-stats">
+          <div><b>7</b><span>em curso</span></div>
+          <div><b>3</b><span>prontas</span></div>
+          <div><b>2</b><span>à espera de peças</span></div>
         </div>
+        <div class="hp-group hp-week">
+          <div class="hp-week-head"><span>Faturação desta semana</span><b>3 180 €</b><small>12% acima da semana passada</small></div>
+          <div class="hp-bars">{bars.map((h, n) => <i class:list={[n === 2 && 'today', !h && 'empty']} style={`--h:${h || 6}px`}></i>)}</div>
+          <div class="hp-bars-axis">{['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((d) => <span>{d}</span>)}</div>
+        </div>
+        <p class="hp-label">Viaturas</p>
+        <div class="hp-group">
+          <div class="hp-row two"><span><b>45-QX-12</b><small>Revisão dos 60 000 km</small></span><em class="ok">Pronta</em></div>
+          <div class="hp-row two"><span><b>AV-08-LM</b><small>Travões</small></span><em>Em curso</em></div>
+          <div class="hp-row two"><span><b>12-RT-90</b><small>Embraiagem</small></span><em class="wait">Peças</em></div>
+        </div>
+        <nav class="hp-tabs">{tabs.dashboard.map(([k, l], n) => <span class:list={[n === active.dashboard && 'on']}><svg viewBox="0 0 24 24" set:html={I[k]} />{l}</span>)}</nav>
       </div>
 
-      <div class="mk-scene" data-scene="automation">
-        <div class="mk-top"><b>Automatizações</b><small>Hoje</small></div>
-        <div class="mk-notes">
-          <div class="mk-note"><b>Lembrete enviado</b><span>Sessão amanhã às 14:00</span><span class="mk-ok"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span></div>
-          <div class="mk-note"><b>Fatura enviada</b><span>Reparação concluída · por email</span><span class="mk-ok"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span></div>
-          <div class="mk-note"><b>Encomenda pronta</b><span>Cliente avisado por SMS</span><span class="mk-ok"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span></div>
-          <div class="mk-note"><b>Relatório semanal</b><span>Enviado para a gerência</span><span class="mk-ok"><Icon name="ok" class="size-3.5" strokeWidth={2.8} /></span></div>
+      <!-- 4. Automatizações -->
+      <div class="mk-scene hp-scene" data-scene="automation">
+        <p class="hp-title">Automações</p>
+        <div class="hp-group">
+          <div class="hp-row toggle"><span>Avisar o cliente por SMS quando o carro fica pronto</span><i class="hp-switch on"></i></div>
+          <div class="hp-row toggle"><span>Enviar a fatura por email ao fechar a reparação</span><i class="hp-switch on"></i></div>
+          <div class="hp-row toggle"><span>Lembrar a revisão passados 12 meses</span><i class="hp-switch on"></i></div>
+          <div class="hp-row toggle"><span>Resumo semanal para a gerência</span><i class="hp-switch"></i></div>
         </div>
-        <p class="mk-foot">O trabalho manual passa a fazer-se sozinho.</p>
+        <p class="hp-label">Hoje</p>
+        <div class="hp-group">
+          <div class="hp-row log"><time>09:12</time><span>SMS enviado: 45-QX-12 pronto</span></div>
+          <div class="hp-row log"><time>09:12</time><span>Fatura FT 2026/184 enviada</span></div>
+          <div class="hp-row log"><time>08:30</time><span>6 lembretes de revisão enviados</span></div>
+        </div>
+        <nav class="hp-tabs">{tabs.automation.map(([k, l], n) => <span class:list={[n === active.automation && 'on']}><svg viewBox="0 0 24 24" set:html={I[k]} />{l}</span>)}</nav>
       </div>
+
+      <!-- Ecrã de abertura (só com animação; ver motion.css). -->
+      <div class="hp-splash">
+        <div class="hp-splash-in">
+          <BrandF class="hp-splash-mark" />
+          <b class="hp-splash-name">FlowOps</b>
+          <span class="hp-splash-bar"><i></i></span>
+        </div>
+      </div>
+      <div class="hp-status"><b>9:41</b><span class="hp-sig"><i></i><i></i><i></i><i></i></span><span class="hp-bat"></span></div>
+      <span class="hp-island"></span>
+      <span class="hp-home"></span>
     </div>
   </div>
-  <div class="flex items-center gap-3">
-    <ol class="hero-steps" aria-hidden="true">
-      <li class="is-active">Website</li><li>Marcações</li><li>Gestão</li><li>Automatização</li>
-    </ol>
-    <button type="button" class="hero-pause group size-11 shrink-0 place-items-center rounded-full border border-white/25 text-white hover:border-aqua hover:text-aqua" aria-pressed="false" data-hero-pause>
+  <!-- Controlos: escolher o exemplo, anterior/seguinte e pausa (ver initHero em scripts/motion.ts). -->
+  <div class="hero-controls">
+    <div class="hero-steps" role="group" aria-label="Exemplos no telemóvel">
+      {['Website', 'Marcações', 'Gestão', 'Automatização'].map((l, n) => (
+        <button type="button" data-step class:list={[n === 0 && 'is-active']} aria-current={n === 0 ? 'true' : 'false'}>{l}</button>
+      ))}
+    </div>
+    <div class="hero-buttons">
+      <button type="button" class="hero-arrow" data-prev aria-label="Exemplo anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></button>
+      <button type="button" class="hero-pause group size-11 shrink-0 place-items-center rounded-full border border-white/25 text-white hover:border-aqua hover:text-aqua" aria-pressed="false" data-hero-pause>
       <span class="sr-only" data-label>Pausar animação</span>
       <svg class="size-4 group-aria-pressed:hidden" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
       <svg class="hidden size-4 group-aria-pressed:block" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" /></svg>
-    </button>
+      </button>
+      <button type="button" class="hero-arrow" data-next aria-label="Exemplo seguinte"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg></button>
+    </div>
   </div>
 </div>

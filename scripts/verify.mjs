@@ -1,4 +1,4 @@
-// Verificação multi-browser e multi-largura, a partir do build em dist/.
+// Verificação multi-browser e multi-largura, a partir do build em .vercel/output/.
 //   npm run build && npm run verify
 // Precisa de: npx playwright install chromium firefox webkit
 //
@@ -11,7 +11,7 @@
 //   - cabeçalhos de segurança e meta tags de SEO em cada página; robots.txt, sitemap e manifest
 // Capturas de página inteira em screenshots/<motor>/.
 import { chromium, firefox, webkit, devices } from '@playwright/test';
-import { spawn } from 'node:child_process';
+import { serveVercel } from './serve-vercel.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 const PAGES = (process.env.PAGES || '/,/privacidade,/404,/contacto/obrigado,/contacto/erro').split(',');
@@ -41,14 +41,8 @@ const deviceProfiles = [
 const engines = { chromium, webkit, firefox };
 const skipped = new Set();
 
-// Servidor do build (no Astro 7 o preview fica em segundo plano: parar no fim).
-spawn('npx', ['astro', 'preview', 'stop'], { stdio: 'ignore' });
-await new Promise((r) => setTimeout(r, 800));
-const server = spawn('npx', ['astro', 'preview', '--port', String(port)], { stdio: 'ignore' });
-for (let i = 0; i < 60; i++) {
-  try { if ((await fetch(`http://localhost:${port}/`)).ok) break; } catch {}
-  await new Promise((r) => setTimeout(r, 500));
-}
+// Servidor do build: imita a Vercel a partir de .vercel/output/ (ver scripts/serve-vercel.mjs).
+const server = await serveVercel(port);
 
 /** Corre dentro da página: devolve os problemas encontrados. */
 function audit() {
@@ -90,7 +84,7 @@ function audit() {
   return issues;
 }
 
-/** Passagem com movimento ativo: o ciclo do hero corre e pausa, e depois de percorrer a página nada fica escondido. */
+/** Passagem com movimento ativo: o ciclo do hero avança, pausa e responde aos cliques, e depois de percorrer a página nada fica escondido. */
 async function runMotion(engineName, label, contextOptions) {
   if (skipped.has(engineName)) return;
   let browser;
@@ -102,21 +96,27 @@ async function runMotion(engineName, label, contextOptions) {
   await page.goto(`http://localhost:${port}/`, { waitUntil: 'networkidle' });
   // O ciclo só corre com o telemóvel visível (fora do ecrã fica em pausa para poupar bateria).
   await page.locator('.hero-phone').scrollIntoViewIfNeeded();
-  await page.waitForTimeout(300);
-  const state = await page.evaluate(() => ({
-    motion: document.documentElement.classList.contains('motion'),
-    running: [...document.querySelectorAll('.mk-scene')].every((el) => el.getAnimations().some((a) => a.playState === 'running')),
-  }));
-  if (!state.motion) issues.push('classe .motion não foi ativada');
-  if (!state.running) issues.push('o ciclo do hero não está a correr');
+  // O ciclo é gerido em scripts/motion.ts: a 1.ª troca é ao fim de 2,9 s (abertura) + 5 s.
+  const active = () => page.evaluate(() => [...document.querySelectorAll('.mk-scene')].findIndex((el) => el.classList.contains('is-active')));
+  if (!(await page.evaluate(() => document.documentElement.classList.contains('motion')))) issues.push('classe .motion não foi ativada');
+  const first = await active();
+  await page.waitForTimeout(8400);
+  if ((await active()) === first) issues.push('o ciclo do hero não está a correr');
   const pause = page.locator('[data-hero-pause]');
   if (await pause.isVisible()) {
     await pause.click();
-    const paused = await page.evaluate(() => [...document.querySelectorAll('.mk-scene')].every((el) => el.getAnimations().every((a) => a.playState === 'paused')));
-    if (!paused) issues.push('o botão de pausa não parou a animação');
     if ((await pause.getAttribute('aria-pressed')) !== 'true') issues.push('pausa: aria-pressed não mudou');
+    const before = await active();
+    await page.waitForTimeout(5600);
+    if ((await active()) !== before) issues.push('o botão de pausa não parou a animação');
     await pause.click();
   } else issues.push('botão de pausa invisível');
+  // Os nomes por baixo do telemóvel mostram o exemplo escolhido.
+  const steps = page.locator('[data-step]');
+  if ((await steps.count()) > 2) {
+    await steps.nth(2).click();
+    if ((await active()) !== 2) issues.push('clicar num exemplo não mudou o ecrã do telemóvel');
+  }
   // Percorre a página como um utilizador.
   const height = await page.evaluate(() => document.documentElement.scrollHeight);
   const step = Math.round((contextOptions.viewport?.height || 800) * 0.6);
@@ -288,8 +288,7 @@ try {
   await runForm('webkit', 'iphone-15', devices['iPhone 15']);
   await runForm('chromium', 'pixel-7', devices['Pixel 7']);
 } finally {
-  server.kill();
-  spawn('npx', ['astro', 'preview', 'stop'], { stdio: 'ignore' });
+  server.close();
 }
 
 const failed = report.filter((r) => r.issues.length);

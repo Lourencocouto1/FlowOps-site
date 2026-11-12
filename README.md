@@ -1,7 +1,7 @@
 # Website da FlowOps
 
 Site institucional da FlowOps, marca comercial de Lourenço Couto e Pedro Marques (trabalhadores independentes): software, websites e apps à medida, em Lisboa.
-Feito com [Astro](https://astro.build) 7, Tailwind CSS 4 e TypeScript. O site é estático; só o formulário de contacto (`/api/contact`) corre no servidor (Cloudflare Workers).
+Feito com [Astro](https://astro.build) 7, Tailwind CSS 4 e TypeScript. O site é estático; só o formulário de contacto (`/api/contact`) corre no servidor (Vercel Functions).
 
 ## Correr localmente
 
@@ -17,7 +17,7 @@ npm run dev               # http://localhost:4321
 |---|---|
 | `npm run dev` | Servidor de desenvolvimento |
 | `npm run build` | Gera o site em `dist/` |
-| `npm run preview` | Serve o build localmente |
+| `npm run preview` | Serve o build localmente, como na Vercel (`scripts/serve-vercel.mjs`, porta 4321) |
 | `npm run check` | Verifica tipos e conteúdos |
 | `npm run brand` | Gera todos os ficheiros da marca (logótipos, favicon, ícones, imagem Open Graph) a partir de `public/brand/logo-source.svg` |
 | `npm run verify` | Verificação em Chromium, WebKit (Safari) e Firefox: 320, 375, 768, 1024, 1280, 1440, 1920 px, telemóvel na horizontal, iPhone, iPad e Android. Mede scroll horizontal, áreas de toque < 44 px, campos < 16 px, erros de JavaScript e violações da CSP, cabeçalhos de segurança, meta tags de SEO, `robots.txt`, sitemap e manifest; faz uma passagem com movimento ativo e testa o formulário. Capturas em `screenshots/` (precisa de `npx playwright install chromium firefox webkit`) |
@@ -33,7 +33,7 @@ Para mudar de nome ou de domínio:
 1. Editar `site.config.mjs`.
 2. `npm run brand` (a imagem Open Graph e os títulos dos SVG levam o nome). Se o nome mudar, o logótipo também muda: ver "Marca".
 3. `npm run build`.
-4. Fora do código: domínio no Worker da Cloudflare, hostnames do Turnstile, domínio no Resend e `CONTACT_FROM_EMAIL`, site no Umami (ver "Deploy").
+4. Fora do código: domínio no projeto da Vercel, hostnames do Turnstile, domínio no Resend e `CONTACT_FROM_EMAIL`, site no Umami (ver "Deploy").
 
 ## Onde editar cada conteúdo
 
@@ -71,7 +71,7 @@ Todos os textos estão em `src/content/`. Não é preciso mexer no código. Se u
 | `PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `CONTACT_DRY_RUN` | Formulário de contacto (ver abaixo) |
 | `PUBLIC_UMAMI_SRC`, `PUBLIC_UMAMI_WEBSITE_ID`, `PUBLIC_UMAMI_HOST` | Estatísticas Umami, sem cookies. Vazio: não carrega nada. Só conta visitas no domínio de `site.config.mjs` |
 
-As variáveis `PUBLIC_*` entram no build (incluindo a CSP); as outras são lidas pelo Worker em tempo de execução.
+As variáveis `PUBLIC_*` entram no build (incluindo a CSP); as outras são lidas pela função do `/api/contact` em tempo de execução.
 
 Nunca coloque segredos no repositório. O `.env` está no `.gitignore`.
 
@@ -86,11 +86,11 @@ Alvo: as duas últimas versões de Safari (iOS e macOS), Chrome (Android e deskt
 
 ## Formulário de contacto
 
-`POST /api/contact` (`src/pages/api/contact.ts`, lógica em `src/lib/contact.ts`) corre num Worker da Cloudflare. O resto do site é estático. Por ordem, faz:
+`POST /api/contact` (`src/pages/api/contact.ts`, lógica em `src/lib/contact.ts`) corre numa Vercel Function. O resto do site é estático. Por ordem, faz:
 
 1. verificação da origem (só aceita pedidos do próprio site) e do tamanho máximo;
 2. honeypot (campo escondido "website": se vier preenchido, responde "ok" e não envia nada);
-3. limite de **5 pedidos por minuto por IP**: binding `CONTACT_LIMITER` em `wrangler.jsonc`, com uma salvaguarda em memória;
+3. limite de **5 pedidos por minuto por IP**, em memória (por instância da função);
 4. validação dos campos, com mensagens em português;
 5. Cloudflare Turnstile;
 6. envio pelo Resend.
@@ -104,10 +104,10 @@ Com JavaScript, o formulário mostra os erros junto a cada campo e a confirmaç�
 **Ativar o envio real:**
 1. No Resend, verificar o domínio e criar uma chave de API.
 2. Na Cloudflare, criar o widget Turnstile para o domínio.
-3. No painel do Worker (Settings → Variables and Secrets), definir `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `TURNSTILE_SECRET_KEY` (secretos) e `PUBLIC_TURNSTILE_SITE_KEY`. Remover `CONTACT_DRY_RUN` ou pô-lo a `false`.
-4. A `PUBLIC_TURNSTILE_SITE_KEY` entra no build, por isso tem de estar definida também nas variáveis de build.
+3. Na Vercel (Settings → Environment Variables), definir `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `TURNSTILE_SECRET_KEY` (secretos) e `PUBLIC_TURNSTILE_SITE_KEY`. Remover `CONTACT_DRY_RUN` ou pô-lo a `false`.
+4. A `PUBLIC_TURNSTILE_SITE_KEY` entra no build: depois de a definir, publicar de novo.
 
-Localmente, o `npm run build` copia o `.env` para `dist/server/.dev.vars`, que é usado pelo `npm run preview`. Depois de mudar o `.env`, volte a fazer build. Esse ficheiro não é enviado no deploy.
+Localmente, o `npm run preview` lê o `.env` ao arrancar. As variáveis `PUBLIC_*` entram no build: depois de as mudar, volte a fazer build.
 
 ## Marca
 
@@ -126,7 +126,7 @@ Fontes do site: Manrope nos títulos e Inter no texto, ambas self-hosted via Fon
 ## SEO, segurança e desempenho
 
 - **SEO:** título, descrição e canonical por página; Open Graph e cartão do X/Twitter com `/og/default.png`; schema.org `Organization` (nome comercial, sem dados de sociedade) e `WebSite` na página inicial; `robots.txt` e sitemap gerados a partir da URL canónica; páginas de `/contacto/` e 404 com `noindex` e fora do sitemap.
-- **Cabeçalhos de segurança:** gerados no build por `integrations/security-headers.mjs` em `dist/client/_headers`. A Content-Security-Policy leva o hash de cada script inline e só permite o Turnstile (`challenges.cloudflare.com`) e, se configurado, o Umami. HSTS de 1 ano com `includeSubDomains` (sem `preload`). Também `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` e `Cross-Origin-Opener-Policy`. O build falha se alguém acrescentar um `onclick=` inline, que a CSP bloquearia.
+- **Cabeçalhos de segurança:** gerados no build por `integrations/security-headers.mjs` nas rotas de `.vercel/output/config.json`. A Content-Security-Policy leva o hash de cada script inline e só permite o Turnstile (`challenges.cloudflare.com`) e, se configurado, o Umami. HSTS de 1 ano com `includeSubDomains` (sem `preload`). Também `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` e `Cross-Origin-Opener-Policy`. O build falha se alguém acrescentar um `onclick=` inline, que a CSP bloquearia.
 - **Desempenho:** sem frameworks no cliente, CSS único, fontes pré-carregadas, imagens otimizadas no build. Resultados em `docs/lighthouse/resumo.md`.
 
 ## Estrutura
@@ -154,34 +154,32 @@ A-CONFIRMAR.md        o que falta decidir ou preencher antes de publicar
 
 Para crescer: as páginas novas vão para `src/pages/` e reutilizam o `BaseLayout`. Um blog ou casos de estudo completos passam a ser uma coleção nova em `content.config.ts`.
 
-## Deploy (Cloudflare Workers)
+## Deploy (Vercel)
 
 > Ainda não publicar a versão final: o nome e o domínio estão por confirmar. Ver `A-CONFIRMAR.md`.
 
-O site é um Worker com ficheiros estáticos: o Astro gera `dist/client/` (páginas, servidas diretamente) e `dist/server/` (só o `/api/contact`). Não há base de dados nem KV.
+O adaptador `@astrojs/vercel` gera `.vercel/output/` (Build Output API): as páginas são estáticas e só o `/api/contact` corre numa Vercel Function. Os cabeçalhos de segurança entram no `.vercel/output/config.json` (ver `integrations/security-headers.mjs`). Não há base de dados. Node.js 22.23.4 ou mais recente (exigência do Astro 7.4).
 
-### 1. Primeira publicação (pré-visualização em `*.workers.dev`)
+### 1. Primeira publicação (pré-visualização em `*.vercel.app`)
 
 Pelo Git (recomendado, publica a cada push):
-1. Cloudflare → **Workers & Pages** → **Create** → **Import a repository** e escolher o repositório.
-2. Build command: `npm run build`. Deploy command: `npx wrangler deploy`. Node.js 22 ou mais recente (variável de build `NODE_VERSION=22`, se for preciso).
-3. Em **Settings → Build → Variables**, as variáveis do build: `PUBLIC_TURNSTILE_SITE_KEY`, `PUBLIC_BOOKING_URL`, `PUBLIC_SHOW_PRICING`, `PUBLIC_UMAMI_*` e, só nesta fase, `PUBLIC_SITE_URL` com o endereço `*.workers.dev`.
-4. Em **Settings → Variables and Secrets**, as do Worker (tipo *Secret*): `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`. E `CONTACT_DRY_RUN` = `true` enquanto não houver Resend.
+1. Vercel → **Add New → Project** → importar o repositório (a app da Vercel no GitHub tem de ter acesso a ele). O `vercel.json` já fixa o framework (Astro), o build e a instalação.
+2. Em **Settings → Environment Variables**: `PUBLIC_TURNSTILE_SITE_KEY`, `PUBLIC_BOOKING_URL`, `PUBLIC_SHOW_PRICING`, `PUBLIC_UMAMI_*`, os segredos `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` e, só nesta fase, `PUBLIC_SITE_URL` com o endereço `*.vercel.app`. `CONTACT_DRY_RUN` = `true` enquanto não houver Resend.
+3. As variáveis `PUBLIC_*` entram no build: depois de as mudar, publicar de novo.
 
-Ou pelo terminal: `npx wrangler login`, `npm run build`, `npx wrangler deploy`; segredos com `npx wrangler secret put TURNSTILE_SECRET_KEY` (e os outros).
+Ou pelo terminal: `npx vercel link`, `npx vercel env add NOME production`, `npx vercel deploy --prod`.
 
-O limite de pedidos (`CONTACT_LIMITER` em `wrangler.jsonc`) não precisa de configuração no painel. O `namespace_id` só tem de ser único na conta.
+O limite de pedidos é em memória, por instância da função: é uma salvaguarda, não um limite global. O Turnstile continua a ser a proteção principal contra spam.
 
 ### 2. Domínio próprio
 
-1. Adicionar o domínio à Cloudflare (**Add a domain**) e trocar os nameservers no registo do domínio.
-2. No Worker: **Settings → Domains & Routes → Add → Custom domain**, com o domínio e o `www.`. Criar uma **Redirect Rule** de `www.` para o domínio sem `www` (301).
-3. Retirar `PUBLIC_SITE_URL` das variáveis de build (passa a valer o `DOMAIN` de `site.config.mjs`) e publicar de novo.
-4. Desligar o endereço `workers.dev` e os *preview URLs* do Worker, para não haver uma cópia do site indexada noutro endereço.
+1. No projeto: **Settings → Domains → Add**, com o domínio e o `www.` (a Vercel propõe o redirecionamento de `www.` para o domínio sem `www`). Criar os registos DNS que a Vercel indicar no registo do domínio.
+2. Retirar `PUBLIC_SITE_URL` (passa a valer o `DOMAIN` de `site.config.mjs`) e publicar de novo.
+3. Em **Settings → Deployment Protection**, manter os *preview URLs* protegidos, para não haver uma cópia do site indexada noutro endereço.
 
 ### 3. Serviços externos
 
-- **Turnstile:** widget *Managed* com o domínio na lista de hostnames (e o `*.workers.dev` enquanto for usado). Chaves no passo 1.
+- **Turnstile** (Cloudflare, funciona fora da Cloudflare): widget *Managed* com o domínio na lista de hostnames (e o `*.vercel.app` enquanto for usado). Chaves no passo 1.
 - **Resend:** adicionar o domínio, criar os registos DNS que o Resend indicar (SPF, DKIM) e um registo DMARC; `CONTACT_FROM_EMAIL` com um endereço desse domínio. Depois `CONTACT_DRY_RUN=false` (ou apagar).
 - **Umami:** criar o site com o domínio e preencher `PUBLIC_UMAMI_SRC` e `PUBLIC_UMAMI_WEBSITE_ID`. Publicar de novo: a CSP é regenerada com o endereço do Umami.
 

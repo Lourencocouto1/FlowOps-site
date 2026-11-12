@@ -5,31 +5,90 @@ import { getSection, getOrdered } from '../../lib/site';
 
 const head = await getSection('problems');
 const items = await getOrdered('problems');
+
+/* "Antes → depois": em cada cena, as mesmas peças começam desarrumadas (b = antes) e arrumam-se (a = depois).
+   b: [x %, y %, largura %, rotação em graus] · a: [x %, y %, largura %] dentro da área da cena.
+   k: aspeto no "antes" (paper, note, sheet, bubble, mail, alert, old, ghost);
+   ak: aspeto no "depois" (row por omissão, head, nav, title, btn, img). */
+type Piece = { k: string; ak?: string; b: [number, number, number, number]; a: [number, number, number]; bt: string; at: string };
+const chip = (t: string, tone = '') => `<em class="pb-chip ${tone}">${t}</em>`;
+const lines = '<i class="pb-lines"></i>';
+const scenes: Record<string, Piece[]> = {
+  'tarefas-manuais': [
+    { k: 'paper', b: [4, 6, 38, -7], a: [5, 22, 90], bt: `<b>Fatura 214</b>${lines}`, at: `<b>Fatura 214</b>${chip('Enviada')}` },
+    { k: 'paper', b: [26, 26, 38, 4], a: [5, 38, 90], bt: `<b>Fatura 215</b>${lines}`, at: `<b>Fatura 215</b>${chip('Enviada')}` },
+    { k: 'paper', b: [8, 54, 40, -2], a: [5, 54, 90], bt: `<b>Guia de transporte</b>${lines}`, at: `<b>Guia de transporte</b>${chip('Gerada')}` },
+    { k: 'note', b: [58, 8, 36, 6], a: [5, 70, 90], bt: 'Passar tudo para o Excel!', at: `<b>Excel da semana</b>${chip('Atualizado')}` },
+    { k: 'alert', ak: 'h', b: [56, 58, 38, -4], a: [5, 4, 90], bt: '<b>18:47</b> e ainda a faturar', at: `Hoje, sem ninguém tocar${chip('Automático')}` },
+  ],
+  'informacao-espalhada': [
+    { k: 'ghost', ak: 'head', b: [5, 4, 90, 0], a: [5, 4, 90], bt: '', at: '<span>Pedido</span><span>Veio de</span><span>Estado</span>' },
+    { k: 'paper', b: [4, 10, 36, -6], a: [5, 18, 90], bt: `Portas, 3 unidades. Ligar amanhã${lines}`, at: `<span>Portas (3 un.)</span><span>Papel</span>${chip('Em produção')}` },
+    { k: 'sheet', b: [44, 4, 48, 3], a: [5, 34, 90], bt: '<b>encomendas_v3_FINAL.xlsx</b><i class="pb-grid"></i>', at: `<span>Encomenda 58</span><span>Excel</span>${chip('Pronta')}` },
+    { k: 'bubble', b: [52, 52, 42, -3], a: [5, 50, 90], bt: 'Já está pronto? Preciso para sexta', at: `<span>Mesa de jantar</span><span>WhatsApp</span>${chip('Sai sexta')}` },
+    { k: 'mail', b: [6, 60, 40, 5], a: [5, 66, 90], bt: '<b>Re: Re: Re:</b> orçamento', at: `<span>Orçamento cozinha</span><span>Email</span>${chip('Enviado')}` },
+  ],
+  'presenca-online': [
+    { k: 'old', ak: 'nav', b: [52, 6, 40, 5], a: [0, 0, 100], bt: 'Ligue-nos: 21 000 0000', at: '<b>Remodelações</b><span>Serviços</span><span>Obras</span><span>Contacto</span>' },
+    { k: 'old', ak: 'title', b: [6, 34, 54, -6], a: [5, 20, 54], bt: 'Bem-vindo ao nosso site!!!', at: 'Obras com prazo e preço por escrito' },
+    { k: 'old', ak: 'btn', b: [8, 6, 40, -3], a: [5, 47, 30], bt: 'Página em construção', at: 'Pedir orçamento' },
+    { k: 'old', ak: 'img', b: [60, 44, 30, 9], a: [64, 20, 31], bt: 'imagem1.jpg', at: '' },
+    { k: 'old', b: [32, 72, 34, 4], a: [5, 72, 43], bt: 'Visitas: 000127', at: `<b>Cozinhas</b>${chip('3 semanas')}` },
+    { k: 'old', b: [62, 74, 32, -5], a: [52, 72, 43], bt: 'Última atualização: 2014', at: `<b>Casas de banho</b>${chip('9 dias')}` },
+  ],
+  'pedidos-perdidos': [
+    { k: 'ghost', ak: 'head', b: [4, 4, 29, 0], a: [4, 4, 29], bt: '', at: 'Novo' },
+    { k: 'ghost', ak: 'head', b: [35.5, 4, 29, 0], a: [35.5, 4, 29], bt: '', at: 'Em curso' },
+    { k: 'ghost', ak: 'head', b: [67, 4, 29, 0], a: [67, 4, 29], bt: '', at: 'Concluído' },
+    { k: 'alert', b: [6, 12, 40, -5], a: [4, 16, 29], bt: '<b>Chamada perdida</b> (3)', at: `<b>Pedido por telefone</b>${chip('Ligar hoje', 'warm')}` },
+    { k: 'bubble', b: [50, 8, 44, 4], a: [4, 43, 29], bt: 'Ainda tem vaga para sábado?', at: `<b>Vaga para sábado</b>${chip('Responder', 'warm')}` },
+    { k: 'mail', b: [10, 50, 46, 3], a: [35.5, 16, 29], bt: '<b>Pedido de orçamento</b> há 6 dias', at: `<b>Orçamento casa de banho</b>${chip('Enviado')}` },
+    { k: 'alert', b: [54, 56, 40, -6], a: [67, 16, 29], bt: '3 mensagens por ler', at: `<b>Marcação sábado, 10h</b>${chip('Confirmada')}` },
+  ],
+};
+const pos = (p: Piece, i: number) =>
+  `--bx:${p.b[0]}%;--by:${p.b[1]}%;--bw:${p.b[2]}%;--br:${p.b[3]}deg;--ax:${p.a[0]}%;--ay:${p.a[1]}%;--aw:${p.a[2]}%;--d:${i}`;
 ---
-<section class="section" aria-labelledby="problemas-title">
+<section class="section" aria-labelledby="problemas-title" data-pb>
   <div class="container-site">
     <SectionHead id="problemas-title" label={head.label} title={head.title} lead={head.lead} />
-    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {items.map(({ data }) => (
-        <li class="reveal lift grid content-start gap-2.5 rounded-[14px] border border-line bg-white p-6" data-problem>
-          <div class="mb-1 flex h-[52px] items-center gap-2.5" aria-hidden="true">
-            <div class="flex">
-              {data.icons.map((name, i) => (
-                <span class:list={['pb-icon grid size-[42px] place-items-center rounded-[10px] border-[1.5px] border-[#c9d8d4] bg-white text-muted', i > 0 && '-ml-3']}>
-                  <Icon name={name} class="size-[22px]" strokeWidth={1.8} />
-                </span>
-              ))}
-            </div>
-            <svg class="pb-line h-3.5 min-w-8 flex-1" viewBox="0 0 60 14" preserveAspectRatio="none"><path d="M2 7 C 18 1, 36 13, 58 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-brand" vector-effect="non-scaling-stroke" /></svg>
-            <span class="pb-check grid size-[42px] shrink-0 place-items-center rounded-full bg-brand text-white"><Icon name="ok" class="size-[22px]" strokeWidth={2.4} /></span>
+    <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-12">
+      <!-- Lista de problemas: escolher um mostra o respetivo "antes → depois". -->
+      <div class="pb-list" role="group" aria-label="Escolha um problema">
+        {items.map(({ data }, n) => (
+          <button type="button" class:list={['pb-item', n === 0 && 'is-active']} data-pb-item aria-pressed={n === 0 ? 'true' : 'false'} aria-controls="pb-stage">
+            <span class="pb-icon" aria-hidden="true"><Icon name={data.icons[0]} class="size-[20px]" strokeWidth={1.8} /></span>
+            <span class="pb-short">{data.short}</span>
+            <span class="pb-problem">{data.problem}</span>
+            <span class="pb-solution"><Icon name="arrow" class="mt-[3px] size-[17px] shrink-0" />{data.solution}</span>
+          </button>
+        ))}
+      </div>
+
+      <div class="pb-stage" id="pb-stage" data-pb-stage>
+        <div class="pb-modes" role="group" aria-label="Comparar">
+          <button type="button" data-pb-mode="before" aria-pressed="false">Antes</button>
+          <button type="button" data-pb-mode="after" aria-pressed="true">Depois</button>
+        </div>
+        {items.map(({ id }, n) => (
+          <div class="pb-scene" data-pb-scene hidden={n !== 0} aria-hidden="true">
+            {(scenes[id] ?? []).map((p, i) => (
+              <div class:list={['pb-piece', `b-${p.k}`, `a-${p.ak ?? 'row'}`]} style={pos(p, i)}>
+                <span class="pb-b" set:html={p.bt} />
+                <span class="pb-a" set:html={p.at} />
+              </div>
+            ))}
           </div>
-          <p class="font-semibold"><span class="sr-only">Problema: </span>{data.problem}</p>
-          <p class="flex gap-2 font-semibold text-brand-strong">
-            <Icon name="arrow" class="mt-1 size-[18px] shrink-0" />
-            <span><span class="sr-only">Solução: </span>{data.solution}</span>
-          </p>
-        </li>
-      ))}
-    </ul>
+        ))}
+        <div class="pb-caption" aria-live="polite">
+          {items.map(({ data }, n) => (
+            <p data-pb-cap hidden={n !== 0}>
+              <span class="pb-cap-problem">{data.problem}</span>
+              <span class="pb-cap-solution"><Icon name="ok" class="size-[18px] shrink-0" strokeWidth={2.4} />{data.solution}</span>
+            </p>
+          ))}
+        </div>
+      </div>
+    </div>
   </div>
 </section>

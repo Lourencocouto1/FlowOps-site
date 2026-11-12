@@ -10,15 +10,15 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
+    "preview": "node scripts/serve-vercel.mjs",
     "check": "astro check",
     "brand": "node scripts/build-brand.mjs",
     "verify": "node scripts/verify.mjs",
     "lighthouse": "node scripts/lighthouse.mjs"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "14.4.2",
     "@astrojs/sitemap": "3.7.4",
+    "@astrojs/vercel": "11.0.17",
     "@fontsource-variable/inter": "5.3.0",
     "@fontsource-variable/manrope": "5.3.0",
     "astro": "7.4.2"
@@ -29,8 +29,7 @@
     "@tailwindcss/vite": "4.3.3",
     "lighthouse": "13.5.0",
     "tailwindcss": "4.3.3",
-    "typescript": "6.0.3",
-    "wrangler": "4.145.0"
+    "typescript": "6.0.3"
   },
   "browserslist": [
     "last 2 Chrome versions",

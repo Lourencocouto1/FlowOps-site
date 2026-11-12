@@ -2,7 +2,6 @@
 // Proteções: mesma origem, tamanho máximo, honeypot, limite de pedidos por IP, Cloudflare Turnstile.
 // Funciona com JavaScript (resposta JSON) e sem JavaScript (redireciona para /contacto/obrigado ou /contacto/erro).
 import type { APIRoute } from 'astro';
-import { env as cfEnv } from 'cloudflare:workers';
 import {
   CONTACT_DRY_RUN,
   CONTACT_FROM_EMAIL,
@@ -55,10 +54,10 @@ export const POST: APIRoute = async ({ request, url, clientAddress }) => {
   if (isHoneypotFilled(form)) return ok();
 
   // 4. Limite de pedidos por IP.
-  const ip = request.headers.get('cf-connecting-ip') ?? clientAddress ?? 'desconhecido';
-  const limiter = cfEnv.CONTACT_LIMITER;
-  const allowed = limiter ? (await limiter.limit({ key: `contact:${ip}` })).success : memoryRateLimit(ip);
-  if (!allowed) return fail('limite');
+  // Na Vercel o clientAddress vem do x-forwarded-for definido pela própria plataforma (não pelo cliente).
+  // Limite em memória: por instância da função, por isso é uma salvaguarda e não um limite global.
+  const ip = clientAddress || 'desconhecido';
+  if (!memoryRateLimit(ip)) return fail('limite');
 
   // 5. Validação dos campos.
   const result = validateContact(form);
